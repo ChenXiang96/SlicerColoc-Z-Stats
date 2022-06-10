@@ -1,15 +1,29 @@
-# Module-for-3D-Slicer
+# Z-Stack Colocalization Statistical tool for 3D Slicer
 ## Overview
 This is a 3D slicer module for computing the percentage of colocalization(Spatial overlap between different channels) of Z-stack images.
 
-Users can threshold the volume rendering of the input Z-stack image in the render window, select the region of interest(ROI) by the bounding box, and get a Venn diagram that shows the critical metric of colocalization's percentage.
+Users can threshold the volume rendering of the input Z-stack image in the 3D view window, select the region of interest(ROI) by the bounding box, and get a Venn diagram that shows the critical metric of colocalization's percentage.
+
+Coloc-Z-Stats is freely usable, without any additional restrictions. Coloc-Z-Stats cannot be used for commercial purposes (see the [Licenses](https://creativecommons.org/licenses/by-nc/4.0/) for details).
 
 ## Installation
-* The current 3D Slicer stable version is needed to use this module: [version 4.11.20210226](https://download.slicer.org/).
-* This is a Python scripted module. Download the source code from [here](https://github.com/ChenXiang96/Module-for-3D-Slicer).
+* The 3D Slicer stable version 5.0.2 is needed to use this module: [version Version 5.0.2](https://download.slicer.org/). Or version 5.0.2 can be downloaded from this [link](https://slicer-packages.kitware.com/#collection/5f4474d0e1d8c75dfc70547e/folder/5f4474d0e1d8c75dfc705482)
+* This is a Python scripted module. Download the source code from [here](https://github.com/ChenXiang96/SlicerColoc-Z-Stats).
 * Extract downloaded package (for example, to C:\Users\Public).
 * Run 3D Slicer, search for the 'Extension Wizard' extension in the 'Modules' search box at the top and open it. Then click the 'Select Extension' button located under the 'Extension Tools' collapsible button.
-* Select the path of this module to import it to Slicer(for example, C:\Users\Public\Module-for-3D-Slicer-main\MyTestModule).
+* Select the path of this module to import it to Slicer(for example, C:\Users\Public\SlicerColoc-Z-Stats-main\ColocZStats).
+
+## Tutorial
+* Start 3D Slicer
+* Switch the scene view to '3D only'
+* Load a TIFF image: Click the 'Data' button or the 'Add Data' button under the 'File' tab, and click the 'Choose File(s) to Add' button to load the image.
+* Switch to "ColocZStats" module
+* Click on the eye icon in front of 'Display ROI' to show the ROI bounding box of the current image in the 3D View.
+* Adjust the ROI bounding box to any position.
+* Click the 'Re-center ROI' button to reposition the image region within the ROI bounding box to the scene's center.
+* Adjust the slider under each channel to any position. The threshold of each channel can be changed synchronously with the sliding of the slider, which can be observed in the 3D view.
+* Click the 'Compute Colocalization' button and wait about a minute to get a Venn diagram which displays the image's colocalization percentage within the current ROI. The Venn diagram will be saved under the installation folder of version 5.0.2.(for example, C:\Users\Public\AppData\Local\NA-MIC\Slicer 5.0.2).
+* Click the 'SAVE' button to save the scene and the information of the UI/Annotation to a 'mrml' file for reloading.
 
 ## Panels and their use
 * **Volume**: Select the current volume to render and opreate. 
