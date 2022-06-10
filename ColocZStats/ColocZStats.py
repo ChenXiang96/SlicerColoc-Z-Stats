@@ -59,7 +59,6 @@ class ColocZStats(ScriptedLoadableModule):
   For user guides, go to <a href="https://github.com/ChenXiang96/Module-for-3D-Slicer">the GitHub page</a>
 """
         self.parent.acknowledgementText = """
-  Here are the acknowledgementText
 """
 
     def testFunc():
