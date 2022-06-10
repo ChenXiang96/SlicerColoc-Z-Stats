@@ -1,6 +1,6 @@
 # Z-Stack Colocalization Statistical tool for 3D Slicer
 ## Overview
-This is an extension module for computing the percentage of colocalization(Spatial overlap between different channels) of Z-stack images.
+This is an extension for computing the percentage of colocalization(Spatial overlap between different channels) of Z-stack images.
 
 Users can threshold the volume rendering of the input Z-stack image in the 3D view window, select the region of interest(ROI) by the bounding box, and get a Venn diagram that shows the critical metric of colocalization's percentage.
 
