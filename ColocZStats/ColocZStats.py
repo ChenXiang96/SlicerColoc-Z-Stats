@@ -517,7 +517,7 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
                 # Add a groupBox for thresholding widgets.
                 self.volumeDict[filepath] = channelVolumes
-                groupBox = qt.QGroupBox("Channels")
+                groupBox = qt.QGroupBox()
                 self.uiGroupDict[filepath] = groupBox
                 layout.addStretch()
                 groupBox.setLayout(layout)
@@ -799,7 +799,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         widget.volumeDict[filename] = channelVolumeList
         widget.InputCheckedDict[filename] = True
         widget.ui.InputCheckBox.checked = True
-        groupBox = qt.QGroupBox("Channels")
+        groupBox = qt.QGroupBox()
         widget.uiGroupDict[filename] = groupBox
         layout.addStretch()
         groupBox.setLayout(layout)
