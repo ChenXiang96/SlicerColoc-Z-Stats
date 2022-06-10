@@ -6,7 +6,7 @@ Users can threshold the volume rendering of the input Z-stack image in the 3D vi
 
 Coloc-Z-Stats is freely usable, without any additional restrictions. Coloc-Z-Stats cannot be used for commercial purposes (see the [Licenses](https://creativecommons.org/licenses/by-nc/4.0/) for details).
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Screenshots.png" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Screenshots.png" width="800px">
 ## Installation
 * The 3D Slicer stable version 5.0.2 is needed to use this module: [version Version 5.0.2](https://download.slicer.org/). Or version 5.0.2 can be downloaded from this [link](https://slicer-packages.kitware.com/#collection/5f4474d0e1d8c75dfc70547e/folder/5f4474d0e1d8c75dfc705482)
 * This is a Python scripted module. Download the source code from [here](https://github.com/ChenXiang96/SlicerColoc-Z-Stats).
