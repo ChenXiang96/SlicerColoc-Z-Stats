@@ -62,6 +62,8 @@ Coloc-Z-Stats is freely usable for non-commercial purposes under Creative Common
 
 ## Authors/Contributors:
 * **Xiang Chen** - [Xiang Chen](https://github.com/ChenXiang96).
+* **Dr.Oscar Meruvia-Pastor** - [Dr. Oscar Meruvia-Pastor](https://github.com/omerpas/).
+* **Dr.Touati Benoukraf** - [Dr.Touati Benoukraf](https://github.com/benoukraflab).
 
 ## Limitations
 * Currently, this module only supports Z-stack images in Tagged image file format (.tif, .tiff).
