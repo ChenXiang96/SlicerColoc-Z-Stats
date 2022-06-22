@@ -4,7 +4,7 @@ project(ColocZStats)
 
 #-----------------------------------------------------------------------------
 # Extension meta-information
-set(EXTENSION_HOMEPAGE "https://www.slicer.org/wiki/Documentation/Nightly/Extensions/ColocZStats")
+set(EXTENSION_HOMEPAGE "https://github.com/ChenXiang96/SlicerColoc-Z-Stats")
 set(EXTENSION_CATEGORY "Quantification")
 set(EXTENSION_CONTRIBUTORS "Xiang Chen (Memorial University of Newfoundland.)")
 set(EXTENSION_DESCRIPTION "This is a 3D slicer module for computing the percentage of colocalization(Spatial overlap between different channels) of Z-stack images.")
