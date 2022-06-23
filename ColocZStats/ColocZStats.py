@@ -16,6 +16,7 @@ import sys
 
 if not hasattr(sys, 'argv'):
     sys.argv = ['']
+
 try:
     import tifffile
 except ModuleNotFoundError:
@@ -33,9 +34,7 @@ from matplotlib_venn import venn3_unweighted
 
 matplotlib.use("Agg")
 from pylab import *
-
 import matplotlib.pyplot as plt
-
 
 #
 # ColocZStats
@@ -54,16 +53,16 @@ class ColocZStats(ScriptedLoadableModule):
         self.parent.dependencies = []
         self.parent.contributors = [
             "Xiang Chen (Memorial University of Newfoundland), Oscar Meruvia-Pastor (Memorial University of Newfoundland), Touati Benoukraf (Memorial University of Newfoundland)"]
+
         self.parent.helpText = """
   For user guides, go to <a href="https://github.com/ChenXiang96/SlicerColoc-Z-Stats">the GitHub page</a>
 """
         self.parent.acknowledgementText = """
-  This extension was originally developed by Xiang Chen, Memorial University of Newfoundland(MUN). Thanks to Dr.Oscar Meruvia-Pastor(MUN) and Dr.Touati Benoukraf(MUN) for their careful guidance during the development process. 
+  This extension was originally developed by Xiang Chen, Memorial University of Newfoundland(MUN). Thanks to Dr.Oscar Meruvia-Pastor(MUN) and Dr.Touati Benoukraf(MUN) for their careful guidance during the development process.
 """
 
     def testFunc():
         print("test func")
-
 
 #
 # ColocZStatsWidget
@@ -119,7 +118,6 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.logic = ColocZStatsLogic()
 
         # Connections
-
         # Connect observers to scene events
         self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartClose)
         self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onSceneEndClose)
@@ -243,7 +241,6 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             roiDisplayNode.SetColor(1.0, 1.0, 1.0)
             roiDisplayNode.SetSelectedColor(1.0, 1.0, 1.0)
             roiDisplayNode.SetOpacity(0.0)
-            # roiDisplayNode.SetInteractionHandleScale(1.0)
             self.ROINodeDict[filename] = ROINode
             self.ROICheckedDict[filename] = checked
 
@@ -302,7 +299,7 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             checkBoxes = groupBox.findChildren(qt.QCheckBox)
             for index in range(len(channelVolumeList)):
                 if channelVolumeList[index]:
-                    name = newName + "_" +"Channel " + str(index+1)
+                    name = newName + "_" + "Channel " + str(index+1)
                     channelVolumeList[index].SetName(name)
                     checkBoxes[index].setText(name)
 
@@ -316,6 +313,7 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         channelVolumeList = self.volumeDict.get(filename)
         if not channelVolumeList:
             return
+
         for channelVolumeNode in channelVolumeList:
             if channelVolumeNode:
                 slicer.mrmlScene.RemoveNode(channelVolumeNode)
@@ -346,6 +344,9 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.logic.computeStats(self)
 
     def onAnnotationTextSaved(self):
+        """
+        To save the annotation text.
+        """
         if not self._updatingGUIFromParameterNode:
             self.updateParameterNodeFromGUI()
 
@@ -395,7 +396,6 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         for node in nodes:
             if node.GetName() == "ColocZStats":
                 self.setParameterNode(node)
-                # self.updateGUIFromParameterNode()
                 break
 
     def initializeParameterNode(self):
@@ -418,6 +418,7 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         Set and observe parameter node.
         Observation is needed because when the parameter node is changed then the GUI must be updated immediately.
         """
+
         # Unobserve previously selected parameter node and add an observer to the newly selected.
         # Changes of parameter node are observed so that whenever parameters are changed by a script or any other module
         # those are reflected immediately in the GUI.
@@ -456,6 +457,7 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         # Load data for each image
         for index in range(imageCount):
             indexStr = str(index)
+
             # Item Text
             itemText = self._parameterNode.GetParameter("ItemText" + indexStr)
 
@@ -526,7 +528,7 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 self.ui.scrollArea.setWidget(self.channelsWidget)
                 comboBox.addItem(itemText, filepath)
 
-                # Create text node for the annotation
+                # Create text node for the annotation.
                 annotationTextNode = self._parameterNode.GetNodeReference("AnnotationNode" + indexStr)
                 annotationTextNode.SetText(annotationText)
                 self.annotationDict[filepath] = annotationTextNode
@@ -541,7 +543,6 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                     visibility = (self._parameterNode.GetParameter(visibilityParameterName) == "true")
                     checkBox = checkBoxes[channelIndex]
                     checkBox.setChecked(visibility)
-
                     lowerThresholdParameterName = "LowerThreshold" + str(index) + "_" + str(channelIndex)
                     lowerThreshold = int(float(self._parameterNode.GetParameter(lowerThresholdParameterName)))
                     upperThresholdParameterName = "UpperThreshold" + str(index) + "_" + str(channelIndex)
@@ -636,7 +637,7 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             channelCount = len(channelVolumeList)
             self._parameterNode.SetParameter("Channel Count" + indexStr, str(channelCount))
 
-            # Volume references
+            # Reference for all channels' volume.
             for channelIndex in range(channelCount):
                 volumeParameterName = "Volume" + indexStr + "_" + str(channelIndex)
                 volumeID = channelVolumeList[channelIndex].GetID()
@@ -682,12 +683,12 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
     """
 
     def __init__(self):
-        ScriptedLoadableModuleLogic.__init__(self)
-
-    def updateThresholdOnVolume(self, volNode, lower, upper, widget, thresholdSlider):
         """
         Called when the threshold slider for each channel triggered.
         """
+        ScriptedLoadableModuleLogic.__init__(self)
+
+    def updateThresholdOnVolume(self, volNode, lower, upper, widget, thresholdSlider):
         if lower < 1:
             lower = 1
             thresholdSlider.lowerThreshold = 1
@@ -880,7 +881,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         """
         To compute the volume's colocalization percentage within the current ROI.
         """
-        print("Calculation started")
         comboBox = widget.ui.InputVolumeComboBox
         filename = comboBox.itemData(comboBox.currentIndex)
         channelVolumeList = widget.volumeDict.get(filename)
@@ -891,7 +891,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         if filename in widget.ROINodeDict:
             roiNode = widget.ROINodeDict[filename]
         selectedVolumes, thresholds, selectedColors = self.getSelectedVolumes(channelVolumeList, widget.uiGroupDict[filename])
-
         # Get all checked channels.
         selectedVolumeCount = len(selectedVolumes)
         if selectedVolumeCount < 2:
@@ -953,6 +952,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         for segmentId in stats["SegmentIDs"]:
             volumeCM3 = stats[segmentId, "LabelmapSegmentStatisticsPlugin.volume_cm3"]
             singleChannelVolumes.append(volumeCM3)
+
         slicer.mrmlScene.RemoveNode(segmentationNode)
 
         # No intersection if there is only one channel
@@ -960,21 +960,21 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             for labelmapVolumeNode in labelmapVolumeNodes:
                 slicer.mrmlScene.RemoveNode(labelmapVolumeNode)
             return
-        shNode = slicer.mrmlScene.GetSubjectHierarchyNode()
 
+        shNode = slicer.mrmlScene.GetSubjectHierarchyNode()
         # Computes two channels intersection if there are only two channels
         if len(volumes) == 2:
             # Create new segmentation node for intersect effect
             workSegmentationNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
             self.importLabelmapsToSegmentationNode(labelmapVolumeNodes, workSegmentationNode, volumes)
+
             selectedId = workSegmentationNode.GetSegmentation().GetNthSegmentID(0)
             modifierId = workSegmentationNode.GetSegmentation().GetNthSegmentID(1)
+            SelectedChannel = selectedId[0:-4].split(imageName + "_")[1]
+            ModifiedChannel = modifierId[0:-4].split(imageName + "_")[1]
             volumeCM3 = self.getIntersectionVolume(volumes[0], workSegmentationNode, selectedId, modifierId)
             slicer.mrmlScene.RemoveNode(workSegmentationNode)
             shNode.RemoveItem(exportFolderItemId)
-            SelectedChannel = selectedId[0:-4].split(imageName+"_")[1]
-            ModifiedChannel = modifierId[0:-4].split(imageName+"_")[1]
-
             for labelmapVolumeNode in labelmapVolumeNodes:
                 slicer.mrmlScene.RemoveNode(labelmapVolumeNode)
             self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeCM3, colors, SelectedChannel, ModifiedChannel, imageName)
@@ -1034,9 +1034,10 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         self.importLabelmapsToSegmentationNode(labelmapVolumeNodes, workSegmentationNode, volumes)
         selectedId = workSegmentationNode.GetSegmentation().GetNthSegmentID(0)
         modifierId = workSegmentationNode.GetSegmentation().GetNthSegmentID(2)
-        SelectedChannel = selectedId[0:-4].split(imageName+"_")[1]
-        ModifiedChannel_1 = workSegmentationNode.GetSegmentation().GetNthSegmentID(1)[0:-4].split(imageName+"_")[1]
-        ModifiedChannel_2 = modifierId[0:-4].split(imageName+"_")[1]
+        SelectedChannel = selectedId[0:-4].split(imageName + "_")[1]
+        ModifiedChannel_1 = workSegmentationNode.GetSegmentation().GetNthSegmentID(1)[0:-4].split(imageName + "_")[1]
+        ModifiedChannel_2 = modifierId[0:-4].split(imageName + "_")[1]
+
         volumeCM3 = self.getIntersectionVolume(volumes[0], workSegmentationNode, selectedId, modifierId)
         self.drawVennForThreeChannels(widget, singleChannelVolumes, twoChannelsIntersectionVolumes, volumeCM3, colors, SelectedChannel,ModifiedChannel_1,ModifiedChannel_2,imageName)
         slicer.mrmlScene.RemoveNode(workSegmentationNode)
@@ -1056,7 +1057,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                 id = volumes[count].GetName() + "_C_T"
                 segmentationNode.GetSegmentation().AddEmptySegment(id, id)
 
-    def drawVennForTwoChannels(self, widget, singleChannelVolumes, intersectionVolume, colors,SelectedChannel, ModifiedChannel, imageName):
+    def drawVennForTwoChannels(self, widget, singleChannelVolumes, intersectionVolume, colors, SelectedChannel, ModifiedChannel, imageName):
         """
         Draw a Venn diagram showing the colocalization percentage when only two channels are selected.
         """
@@ -1073,6 +1074,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         print("The percentage of " + SelectedChannel + " is: " + sum1)
         print("The percentage of " + ModifiedChannel + " is: " + sum2)
         print("The percentage of intersection between " + SelectedChannel + " and " + ModifiedChannel + " is:" + p3)
+        print("Calculation finished")
+        print("------------------------------")
 
         # Display and save the Venn diagram.
         my_dpi = 100
@@ -1098,8 +1101,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         volumeChannel2 = format(singleChannelVolumes[1], '.4f')
         volumeChannel3 = format(singleChannelVolumes[2], '.4f')
         intersection_1_2 = format(twoChannelsIntersectionVolumes[0], '.4f')
-        intersection_1_3 = format(twoChannelsIntersectionVolumes[2], '.4f')
         intersection_2_3 = format(twoChannelsIntersectionVolumes[1], '.4f')
+        intersection_1_3 = format(twoChannelsIntersectionVolumes[2], '.4f')
         intersection_1_2_3 = format(intersection_1_2_3, '.4f')
         TotalVolumeoftwochannels = format(float(volumeChannel1) + float(volumeChannel2) - float(intersection_1_2), '.4f')
         TotalVolumeofthreechannels = format(float(TotalVolumeoftwochannels) + float(volumeChannel3) - float(intersection_1_3) - (float(intersection_2_3) - float(intersection_1_2_3)), '.4f')
@@ -1231,7 +1234,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
     def cropVolume(self, inputVolume, cropVolumeParameterNode):
         """
-        Crop the volume.
+        To crop the volume.
         """
         cropVolumeParameterNode.SetInputVolumeNodeID(inputVolume.GetID())
         cropVolumeParameterNode.SetOutputVolumeNodeID(None)
@@ -1278,6 +1281,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         """
         Apply the 'intersect operation' of 'Logical operators' to get all intersections.
         """
+        import SegmentEditorEffects
         segmentEditorWidget, segmentEditorNode = self.setupSegmentEditor()
         segmentationNode.SetReferenceImageGeometryParameterFromVolumeNode(masterVolume)
         segmentationGeometryWidget = slicer.qMRMLSegmentationGeometryWidget()
@@ -1295,29 +1299,16 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         slicer.mrmlScene.RemoveNode(segmentEditorNode)
         return segmentationNode
 
-
 #
 # ColocZStatsTest
 #
 class ColocZStatsTest(ScriptedLoadableModuleTest):
     """
-    This is the test case for this module.
-    Uses ScriptedLoadableModuleTest base class, available at:
-    https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
+    The test case.
     """
-    def setUp(self):
-        """ Do whatever is needed to reset the state - typically a scene clear will be enough.
-        """
-        slicer.mrmlScene.Clear(0)
-
     def runTest(self):
-        """Run as few or as many tests as needed here.
-        """
-        self.setUp()
         self.test_ColocZStats()
 
     def test_ColocZStats(self):
-        """Add test here.
-        """
         self.delayDisplay("Starting the test")
         self.delayDisplay('Test passed!')
