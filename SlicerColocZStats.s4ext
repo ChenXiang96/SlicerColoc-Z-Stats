@@ -6,7 +6,7 @@
 
 # This is source code manager (i.e. svn)
 scm git
-scmurl https://github.com/ChenXiang96/SlicerColoc-Z-Stats
+scmurl https://github.com/ChenXiang96/SlicerColoc-Z-Stats.git
 scmrevision 5.0
 
 # list dependencies
