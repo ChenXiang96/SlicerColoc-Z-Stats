@@ -13,7 +13,7 @@ Coloc-Z-Stats is freely usable for non-commercial purposes under Creative Common
 * This is a Python scripted module. Download the source code from [here](https://github.com/ChenXiang96/SlicerColoc-Z-Stats).
 * Extract downloaded package (for example, to C:\Users\Public).
 * Run 3D Slicer, search for the 'Extension Wizard' extension in the 'Modules' search box at the top and open it. Then click the 'Select Extension' button located under the 'Extension Tools' collapsible button.
-* Select the path of this module to import it to Slicer(for example, C:\Users\Public\SlicerColoc-Z-Stats-main\ColocZStats).
+* Select the path of this module to import it to Slicer(for example, C:\Users\Public\SlicerColoc-Z-Stats-main).
 
 ## Tutorial
 * Start 3D Slicer
