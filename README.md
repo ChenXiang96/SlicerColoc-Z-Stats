@@ -19,12 +19,12 @@ Coloc-Z-Stats is freely usable for non-commercial purposes under Creative Common
 * Start 3D Slicer
 * Switch the scene view to '3D only'
 * Load a TIFF image: Click the 'Data' button or the 'Add Data' button under the 'File' tab, and click the 'Choose File(s) to Add' button to load the image.
-* Switch to "ColocZStats" module
+* Switch to "ColocZStats" module. The TIFF file will appear as grayscale image until it is selected as 'Volume' in the ColozZstats module.
 * Click on the eye icon in front of 'Display ROI' to show the ROI bounding box of the current image in the 3D View.
 * Adjust the ROI bounding box to any position.
 * Click the 'Re-center ROI' button to reposition the image region within the ROI bounding box to the scene's center.
 * Adjust the slider under each channel to any position. The threshold of each channel can be changed synchronously with the sliding of the slider, which can be observed in the 3D view.
-* Click the 'Compute Colocalization' button and wait about a minute to get a Venn diagram which displays the image's colocalization percentage within the current ROI. The Venn diagram will be saved under the installation folder of version 5.0.2.(for example, C:\Users\Public\AppData\Local\NA-MIC\Slicer 5.0.2).
+* Click the 'Compute Colocalization' button and wait about a minute to get a Venn diagram which displays the image's colocalization percentage within the current ROI.(Sometimes the computation may take more than a minute, depending on the selected threshold range.) The Venn diagram will be saved under the installation folder of version 5.0.2.(for example, C:\Users\Public\AppData\Local\NA-MIC\Slicer 5.0.2).
 * Click the 'SAVE' button to save the scene and the information of the UI/Annotation to a 'mrml' file for reloading.
 * [Download links to sample image](https://drive.google.com/file/d/1IYlggsikgtQR7jXE83sSS2ZtMCuswsA0/view?usp=sharing)
 
