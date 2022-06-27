@@ -23,7 +23,7 @@
          <string>Display ROI</string>
         </property>
         <property name="indicatorIcon">
-         <iconset>
+         <iconset resource="../qMRMLWidgets.qrc">
           <normaloff>:/Icons/VisibleOn.png</normaloff>
           <normalon>:/Icons/VisibleOff.png</normalon>:/Icons/VisibleOn.png</iconset>
         </property>
@@ -47,7 +47,7 @@
          <string>Volume:</string>
         </property>
         <property name="indicatorIcon">
-         <iconset>
+         <iconset resource="../qMRMLWidgets.qrc">
           <normaloff>:/Icons/VisibleOn.png</normaloff>
           <normalon>:/Icons/VisibleOff.png</normalon>:/Icons/VisibleOn.png</iconset>
         </property>
