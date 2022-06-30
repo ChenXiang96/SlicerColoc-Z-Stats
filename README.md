@@ -4,7 +4,7 @@ This is an extension for computing the percentage of colocalization(Spatial over
 
 Users can threshold the volume rendering of the input Z-stack image in the 3D view window, select the region of interest(ROI) by the bounding box, and get a Venn diagram that shows the critical metric of colocalization's percentage.
 
-Coloc-Z-Stats is freely usable for non-commercial purposes under Creative Commons License: Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) (see the [license](https://creativecommons.org/licenses/by-nc/4.0/) for details).
+The license for this extension is [MIT](https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/LICENSE)
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Screenshots.png" width="800px">
 
