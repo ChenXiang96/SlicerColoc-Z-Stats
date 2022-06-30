@@ -1273,10 +1273,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         effect.setParameter("MaximumThreshold", str(upperThreshold))
         effect.self().onApply()
 
-        # Show segmentation in 3D
-        segmentationNode.CreateClosedSurfaceRepresentation()
-        segmentationNode.GetDisplayNode().SetOpacity(0.6)
-
     def applyLogicalEffect(self, masterVolume, segmentationNode, segmentId, modifierSegmentID, operation):
         """
         Apply the 'intersect operation' of 'Logical operators' to get all intersections.
