@@ -64,6 +64,7 @@ class ColocZStats(ScriptedLoadableModule):
     def testFunc():
         print("test func")
 
+
 #
 # ColocZStatsWidget
 #
@@ -299,7 +300,7 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             checkBoxes = groupBox.findChildren(qt.QCheckBox)
             for index in range(len(channelVolumeList)):
                 if channelVolumeList[index]:
-                    name = newName + "_" + "Channel " + str(index+1)
+                    name = newName + "_" + "Channel " + str(index + 1)
                     channelVolumeList[index].SetName(name)
                     checkBoxes[index].setText(name)
 
@@ -504,7 +505,7 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                     upperThreshold = int(float(self._parameterNode.GetParameter(upperThresholdParameterName)))
 
                     # Create widgets for channel volume node
-                    name = itemText + "_" +"Channel " + str(channelIndex+1)
+                    name = itemText + "_" + "Channel " + str(channelIndex + 1)
                     checkBox = qt.QCheckBox(name)
                     checkBox.objectName = name + "_checkbox"
                     checkBox.setChecked(visibility)
@@ -537,7 +538,6 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 checkBoxes = groupBox.findChildren(qt.QCheckBox)
                 thresholdSliders = groupBox.findChildren(slicer.qMRMLVolumeThresholdWidget)
                 for channelIndex in range(len(channelVolumes)):
-
                     # Update the state of channels' Visibility, LowerThreshold, UpperThreshold.
                     visibilityParameterName = "Visibility" + str(index) + "_" + str(channelIndex)
                     visibility = (self._parameterNode.GetParameter(visibilityParameterName) == "true")
@@ -788,7 +788,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             if len(channelVolumeList) == 0:
                 for component in range(channelNum):
                     componentImage = image[component, :, :, :]
-                    name = nodeName + "_" + "Channel "+ str(component+1)
+                    name = nodeName + "_" + "Channel " + str(component + 1)
                     channelVolume = self.createVolumeForChannel(componentImage, colorIds[component], layout, name,
                                                                 widget)
                     channelVolumeList.append(channelVolume)
@@ -891,6 +891,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         if filename in widget.ROINodeDict:
             roiNode = widget.ROINodeDict[filename]
         selectedVolumes, thresholds, selectedColors = self.getSelectedVolumes(channelVolumeList, widget.uiGroupDict[filename])
+
         # Get all checked channels.
         selectedVolumeCount = len(selectedVolumes)
         if selectedVolumeCount < 2:
@@ -939,148 +940,100 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         """
         To compute the volume's colocalization percentage within the current ROI.
         """
+        # Get cropped and thresholded volume data in numpy array
+        cropVolLogic = slicer.modules.cropvolume.logic()
+        cropExtent = [0] * 6
+        cropVolLogic.GetVoxelBasedCropOutputExtent(roiNode, volumes[0], cropExtent)
+        for cropExtentIndex in range(len(cropExtent)):
+            if cropExtent[cropExtentIndex] < 0:
+                cropExtent[cropExtentIndex] = 0
+        workVolumes = list()
         singleChannelVolumes = list()
-        segStatLogic = SegmentStatistics.SegmentStatisticsLogic()
-        parameterNode = segStatLogic.getParameterNode()
-        exportFolderItemId, labelmapVolumeNodes = self.cropAndThresholdVolumes(volumes, roiNode, thresholds, imageName)
-        segmentationNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
-        segmentationsLogic = slicer.modules.segmentations.logic()
-        self.importLabelmapsToSegmentationNode(labelmapVolumeNodes, segmentationNode, volumes)
-        parameterNode.SetParameter("Segmentation", segmentationNode.GetID())
-        segStatLogic.computeStatistics()
-        stats = segStatLogic.getStatistics()
-        for segmentId in stats["SegmentIDs"]:
-            volumeCM3 = stats[segmentId, "LabelmapSegmentStatisticsPlugin.volume_cm3"]
-            singleChannelVolumes.append(volumeCM3)
+        selected_channel_name = list()
+        volumeMM3 = 0
+        volumeCM3 = 0
+        for index in range(len(volumes)):
+            volume = volumes[index]
+            arrayData = slicer.util.arrayFromVolume(volume)  # Get numpy array data from volume
+            volumeMM3 = (arrayData > 0).sum()
 
-        slicer.mrmlScene.RemoveNode(segmentationNode)
+            # Crop volume data. Note that numpy array index order is kji, not ijk.
+            if roiNode:
+                arrayData = arrayData[cropExtent[4]: cropExtent[5], cropExtent[2]: cropExtent[3],
+                            cropExtent[0]: cropExtent[1]]
+            volumeMM3 = (arrayData > 0).sum()
+
+            # Threshold volume data
+            arrayData[arrayData < thresholds[index * 2]] = 0
+            arrayData[arrayData > thresholds[index * 2 + 1]] = 0
+            workVolumes.append(arrayData)
+            volumeMM3 = (arrayData > 0).sum()
+            volumeCM3 = volumeMM3 * 0.001
+            singleChannelVolumes.append(volumeCM3)
+            selected_channel_name.append(volume.GetName())
 
         # No intersection if there is only one channel
         if len(volumes) == 1:
-            for labelmapVolumeNode in labelmapVolumeNodes:
-                slicer.mrmlScene.RemoveNode(labelmapVolumeNode)
             return
 
-        shNode = slicer.mrmlScene.GetSubjectHierarchyNode()
         # Computes two channels intersection if there are only two channels
-        if len(volumes) == 2:
-            # Create new segmentation node for intersect effect
-            workSegmentationNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
-            self.importLabelmapsToSegmentationNode(labelmapVolumeNodes, workSegmentationNode, volumes)
-
-            selectedId = workSegmentationNode.GetSegmentation().GetNthSegmentID(0)
-            modifierId = workSegmentationNode.GetSegmentation().GetNthSegmentID(1)
-            SelectedChannel = selectedId[0:-4].split(imageName + "_")[1]
-            ModifiedChannel = modifierId[0:-4].split(imageName + "_")[1]
-            volumeCM3 = self.getIntersectionVolume(volumes[0], workSegmentationNode, selectedId, modifierId)
-            slicer.mrmlScene.RemoveNode(workSegmentationNode)
-            shNode.RemoveItem(exportFolderItemId)
-            for labelmapVolumeNode in labelmapVolumeNodes:
-                slicer.mrmlScene.RemoveNode(labelmapVolumeNode)
-            self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeCM3, colors, SelectedChannel, ModifiedChannel, imageName)
-            slicer.mrmlScene.RemoveNode(workSegmentationNode)
+        if len(workVolumes) == 2:
+            volumeMM3 = np.logical_and(workVolumes[0] > 0, workVolumes[1] > 0).sum()
+            volumeCM3 = volumeMM3 * 0.001
+            vennLabel1 = selected_channel_name[0].split(imageName + "_")[1]
+            vennLabel2 = selected_channel_name[1].split(imageName + "_")[1]
+            self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeCM3, colors, vennLabel1, vennLabel2, imageName)
             return
 
-        # Compute the intersection between every combination of two channels
         twoChannelsIntersectionVolumes = list()
         for index in range(3):
             secondIndex = index + 1
             if secondIndex == 3:
                 secondIndex = 0
-
-            # Create a new segmentation node for executing the 'intersect operation' of 'Logical operators.
-            workSegmentationNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
-            self.importLabelmapsToSegmentationNode(labelmapVolumeNodes, workSegmentationNode, volumes)
-
-            # Apply the 'intersect operation' and compute the volume of intersection.
-            selectedId = workSegmentationNode.GetSegmentation().GetNthSegmentID(index)
-            modifierId = workSegmentationNode.GetSegmentation().GetNthSegmentID(secondIndex)
-            volumeCM3 = self.getIntersectionVolume(volumes[index], workSegmentationNode, selectedId, modifierId)
+            volumeMM3 = np.logical_and(workVolumes[index] > 0, workVolumes[secondIndex] > 0).sum()
+            volumeCM3 = volumeMM3 * 0.001
             twoChannelsIntersectionVolumes.append(volumeCM3)
-            slicer.mrmlScene.RemoveNode(workSegmentationNode)
 
-        # Compute the intersection of three channels
-        # - Create a new segmentation node for executing the 'intersect operation' of 'Logical operators.
-        workSegmentationNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
-        self.importLabelmapsToSegmentationNode(labelmapVolumeNodes, workSegmentationNode, volumes)
+        volumeMM3 = np.logical_and(np.logical_and(workVolumes[0] > 0, workVolumes[1] > 0), workVolumes[2] > 0).sum()
+        volumeCM3 = volumeMM3 * 0.001
+        vennLabel1 = selected_channel_name[0].split(imageName + "_")[1]
+        vennLabel2 = selected_channel_name[1].split(imageName + "_")[1]
+        vennLabel3 = selected_channel_name[2].split(imageName + "_")[1]
+        self.drawVennForThreeChannels(widget, singleChannelVolumes, twoChannelsIntersectionVolumes, volumeCM3, colors, vennLabel1, vennLabel2, vennLabel3, imageName)
 
-        # - Apply the 'intersect operation' and compute the volume of all intersections.
-        id0 = workSegmentationNode.GetSegmentation().GetNthSegmentID(0)
-        id1 = workSegmentationNode.GetSegmentation().GetNthSegmentID(1)
-        id2 = workSegmentationNode.GetSegmentation().GetNthSegmentID(2)
-        selectedId = id0
-        modifierId = id1
-        self.getIntersectionVolume(volumes[0], workSegmentationNode, selectedId, modifierId)
-        for labelmapVolumeNode in labelmapVolumeNodes:
-            slicer.mrmlScene.RemoveNode(labelmapVolumeNode)
-        labelmapVolumeNodes.clear()
-        labelmapVolumeNode = slicer.mrmlScene.AddNewNodeByClass('vtkMRMLLabelMapVolumeNode')
-        ids = vtk.vtkStringArray()
-        ids.SetNumberOfComponents(1)
-        ids.SetNumberOfTuples(1)
-        ids.SetValue(0, id0)
-        segmentationsLogic.ExportSegmentsToLabelmapNode(workSegmentationNode, ids, labelmapVolumeNode, volumes[0])
-        labelmapVolumeNodes.append(labelmapVolumeNode)
-        labelmapVolumeNode = slicer.mrmlScene.AddNewNodeByClass('vtkMRMLLabelMapVolumeNode')
-        ids.SetValue(0, id1)
-        segmentationsLogic.ExportSegmentsToLabelmapNode(workSegmentationNode, ids, labelmapVolumeNode, volumes[0])
-        labelmapVolumeNodes.append(labelmapVolumeNode)
-        labelmapVolumeNode = slicer.mrmlScene.AddNewNodeByClass('vtkMRMLLabelMapVolumeNode')
-        ids.SetValue(0, id2)
-        segmentationsLogic.ExportSegmentsToLabelmapNode(workSegmentationNode, ids, labelmapVolumeNode, volumes[0])
-        labelmapVolumeNodes.append(labelmapVolumeNode)
-        slicer.mrmlScene.RemoveNode(workSegmentationNode)
-        workSegmentationNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
-        self.importLabelmapsToSegmentationNode(labelmapVolumeNodes, workSegmentationNode, volumes)
-        selectedId = workSegmentationNode.GetSegmentation().GetNthSegmentID(0)
-        modifierId = workSegmentationNode.GetSegmentation().GetNthSegmentID(2)
-        SelectedChannel = selectedId[0:-4].split(imageName + "_")[1]
-        ModifiedChannel_1 = workSegmentationNode.GetSegmentation().GetNthSegmentID(1)[0:-4].split(imageName + "_")[1]
-        ModifiedChannel_2 = modifierId[0:-4].split(imageName + "_")[1]
-
-        volumeCM3 = self.getIntersectionVolume(volumes[0], workSegmentationNode, selectedId, modifierId)
-        self.drawVennForThreeChannels(widget, singleChannelVolumes, twoChannelsIntersectionVolumes, volumeCM3, colors, SelectedChannel,ModifiedChannel_1,ModifiedChannel_2,imageName)
-        slicer.mrmlScene.RemoveNode(workSegmentationNode)
-        shNode.RemoveItem(exportFolderItemId)
-        for labelmapVolumeNode in labelmapVolumeNodes:
-            slicer.mrmlScene.RemoveNode(labelmapVolumeNode)
-
-    def importLabelmapsToSegmentationNode(self, labelmapVolumeNodes, segmentationNode, volumes):
-        """
-        Import all labelmaps to a segmentationNode for doing 'Segment Intersect'
-        """
-        segmentationsLogic = slicer.modules.segmentations.logic()
-        for labelmapVolumeNode in labelmapVolumeNodes:
-            count = segmentationNode.GetSegmentation().GetNumberOfSegments()
-            segmentationsLogic.ImportLabelmapToSegmentationNode(labelmapVolumeNode, segmentationNode)
-            if count == segmentationNode.GetSegmentation().GetNumberOfSegments():
-                id = volumes[count].GetName() + "_C_T"
-                segmentationNode.GetSegmentation().AddEmptySegment(id, id)
-
-    def drawVennForTwoChannels(self, widget, singleChannelVolumes, intersectionVolume, colors, SelectedChannel, ModifiedChannel, imageName):
+    def drawVennForTwoChannels(self, widget, singleChannelVolumes, intersectionVolume, colors, vennLabel1, vennLabel2, imageName):
         """
         Draw a Venn diagram showing the colocalization percentage when only two channels are selected.
         """
-        TotalVolumeoftwochannels = singleChannelVolumes[0] + singleChannelVolumes[1] - intersectionVolume
-        result1 = (singleChannelVolumes[0] - intersectionVolume) / TotalVolumeoftwochannels
-        result2 = (singleChannelVolumes[1] - intersectionVolume) / TotalVolumeoftwochannels
+        p1 = 0
+        p2 = 0
+        p3 = 0
 
-        # Get the specific percentage value corresponding to each part of the Venn diagram.
-        p1 = format(result1 * 100, '.4f')
-        p2 = format(result2 * 100, '.4f')
-        p3 = format((100 - (float(p1) + float(p2))), '.4f')
-        sum1 =   format((float(p1) + float(p3)), '.4f')
-        sum2 = format((float(p2) + float(p3)), '.4f')
-        print("The percentage of " + SelectedChannel + " is: " + sum1 + "%")
-        print("The percentage of " + ModifiedChannel + " is: " + sum2 + "%")
-        print("The percentage of intersection between " + SelectedChannel + " and " + ModifiedChannel + " is:" + p3 + "%")
-        print("Calculation finished")
-        print("------------------------------")
+        totalVolumeOfTwoChannels = singleChannelVolumes[0] + singleChannelVolumes[1] - intersectionVolume
+
+        if float(totalVolumeOfTwoChannels) > 0:
+            result1 = (singleChannelVolumes[0] - intersectionVolume) / totalVolumeOfTwoChannels
+            result2 = (singleChannelVolumes[1] - intersectionVolume) / totalVolumeOfTwoChannels
+
+            # Get the specific percentage value corresponding to each part of the Venn diagram.
+            p1 = format(result1 * 100, '.4f')
+            p2 = format(result2 * 100, '.4f')
+            p3 = format((100 - (float(p1) + float(p2))), '.4f')
+            sum1 = format((float(p1) + float(p3)), '.4f')
+            sum2 = format((float(p2) + float(p3)), '.4f')
+            print("The percentage of " + vennLabel1 + " is: " + sum1 + "%")
+            print("The percentage of " + vennLabel2 + " is: " + sum2 + "%")
+            print("The percentage of intersection between " + vennLabel1 + " and " + vennLabel2 + " is:" + p3 + "%")
+            print("Calculation completed.")
+            print("------------------------------")
+        else:
+            print("Total volume is 0.")
 
         # Display and save the Venn diagram.
         my_dpi = 100
         plt.figure(figsize=(800 / my_dpi, 600 / my_dpi), dpi=my_dpi)
-        venn2_unweighted(subsets=[p1, p2, p3], set_labels=[SelectedChannel, ModifiedChannel], set_colors=(colors[0], colors[1]),
+        venn2_unweighted(subsets=[p1, p2, p3], set_labels=[vennLabel1, vennLabel2],
+                         set_colors=(colors[0], colors[1]),
                          alpha=0.6)
         plt.title("Volume Percentage(%)\n" + imageName, fontsize=18)
         Vennimagename = imageName + '_Venn diagram.jpg'
@@ -1093,7 +1046,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         widget.imageWidget.show()
 
     def drawVennForThreeChannels(self, widget, singleChannelVolumes, twoChannelsIntersectionVolumes, intersection_1_2_3,
-                                 colors, SelectedChannel,ModifiedChannel_1,ModifiedChannel_2,imageName):
+                                 colors, vennLabel1, vennLabel2, vennLabel3, imageName):
         """
         Draw a Venn diagram showing the colocalization percentage when three channels are selected.
         """
@@ -1104,46 +1057,58 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         intersection_2_3 = format(twoChannelsIntersectionVolumes[1], '.4f')
         intersection_1_3 = format(twoChannelsIntersectionVolumes[2], '.4f')
         intersection_1_2_3 = format(intersection_1_2_3, '.4f')
-        TotalVolumeoftwochannels = format(float(volumeChannel1) + float(volumeChannel2) - float(intersection_1_2), '.4f')
-        TotalVolumeofthreechannels = format(float(TotalVolumeoftwochannels) + float(volumeChannel3) - float(intersection_1_3) - (float(intersection_2_3) - float(intersection_1_2_3)), '.4f')
+        totalVolumeOfTwoChannels = format(float(volumeChannel1) + float(volumeChannel2) - float(intersection_1_2), '.4f')
+        totalVolumeOfThreeChannels = format(float(totalVolumeOfTwoChannels) + float(volumeChannel3) - float(intersection_1_3) - (float(intersection_2_3) - float(intersection_1_2_3)), '.4f')
 
-        result1 = (float(volumeChannel1) - float(intersection_1_2) - ( float(intersection_1_3) - float(intersection_1_2_3))) / float(TotalVolumeofthreechannels)
-        result2 = (float(volumeChannel2) - float(intersection_1_2) - (float(intersection_2_3) - float(intersection_1_2_3))) / float(TotalVolumeofthreechannels)
-        result3 = (float(intersection_1_2) - float(intersection_1_2_3)) / float(TotalVolumeofthreechannels)
-        result4 = (float(volumeChannel3) - float(intersection_2_3) - (float(intersection_1_3) - float(intersection_1_2_3))) / float(TotalVolumeofthreechannels)
-        result5 = (float(intersection_1_3) - float(intersection_1_2_3)) / float(TotalVolumeofthreechannels)
-        result6 = (float(intersection_2_3) - float(intersection_1_2_3)) / float(TotalVolumeofthreechannels)
+        p1 = 0
+        p2 = 0
+        p3 = 0
+        p4 = 0
+        p5 = 0
+        p6 = 0
+        p7 = 0
 
-        # Get the specific percentage value corresponding to each part of the Venn diagram.
-        p1 = format(result1 * 100, '.4f')
-        p2 = format(result2 * 100, '.4f')
-        p3 = format(result3 * 100, '.4f')
-        p4 = format(result4 * 100, '.4f')
-        p5 = format(result5 * 100, '.4f')
-        p6 = format(result6 * 100, '.4f')
-        p7 = format((100 - (float(p1) + float(p2) + float(p3) +float(p4) + float(p5) + float(p6))), '.4f')
+        if float(totalVolumeOfThreeChannels) > 0:
+            result1 = (float(volumeChannel1) - float(intersection_1_2) - (float(intersection_1_3) - float(intersection_1_2_3))) / float(totalVolumeOfThreeChannels)
+            result2 = (float(volumeChannel2) - float(intersection_1_2) - (float(intersection_2_3) - float(intersection_1_2_3))) / float(totalVolumeOfThreeChannels)
+            result3 = (float(intersection_1_2) - float(intersection_1_2_3)) / float(totalVolumeOfThreeChannels)
+            result4 = (float(volumeChannel3) - float(intersection_2_3) - (float(intersection_1_3) - float(intersection_1_2_3))) / float(totalVolumeOfThreeChannels)
+            result5 = (float(intersection_1_3) - float(intersection_1_2_3)) / float(totalVolumeOfThreeChannels)
+            result6 = (float(intersection_2_3) - float(intersection_1_2_3)) / float(totalVolumeOfThreeChannels)
 
-        sum1_2 = format((float(p3) + float(p7)), '.4f')
-        sum1_3 = format((float(p5) + float(p7)), '.4f')
-        sum2_3 = format((float(p6) + float(p7)), '.4f')
-        sum1 = format((float(p1) + float(p5) + float(p3) + float(p7)), '.4f')
-        sum2 = format((float(p2) + float(p6) + float(p3) + float(p7)), '.4f')
-        sum3 = format((float(p4) + float(p5) + float(p6) + float(p7)), '.4f')
+            # Get the specific percentage value corresponding to each part of the Venn diagram.
+            p1 = format(result1 * 100, '.4f')
+            p2 = format(result2 * 100, '.4f')
+            p3 = format(result3 * 100, '.4f')
+            p4 = format(result4 * 100, '.4f')
+            p5 = format(result5 * 100, '.4f')
+            p6 = format(result6 * 100, '.4f')
+            p7 = format((100 - (float(p1) + float(p2) + float(p3) + float(p4) + float(p5) + float(p6))), '.4f')
 
-        print("The percentage of " + SelectedChannel + " is:" + sum1 + "%")
-        print("The percentage of " + ModifiedChannel_1 + " is:" + sum2 + "%")
-        print("The percentage of " + ModifiedChannel_2 + " is:" + sum3 + "%")
-        print("The percentage of intersection between " + SelectedChannel + " and " + ModifiedChannel_1 + " is:" + sum1_2 + "%")
-        print("The percentage of intersection between " + SelectedChannel + " and " + ModifiedChannel_2 + " is:" + sum1_3 + "%")
-        print("The percentage of intersection between " + ModifiedChannel_1 + " and " + ModifiedChannel_2 + " is:" + sum2_3 + "%")
-        print("The percentage of the intersection of the three channels is: " + p7 + "%")
-        print("Calculation finished")
-        print("------------------------------")
+            sum1_2 = format((float(p3) + float(p7)), '.4f')
+            sum1_3 = format((float(p5) + float(p7)), '.4f')
+            sum2_3 = format((float(p6) + float(p7)), '.4f')
+            sum1 = format((float(p1) + float(p5) + float(p3) + float(p7)), '.4f')
+            sum2 = format((float(p2) + float(p6) + float(p3) + float(p7)), '.4f')
+            sum3 = format((float(p4) + float(p5) + float(p6) + float(p7)), '.4f')
+
+            print("The percentage of " + vennLabel1 + " is:" + sum1 + "%")
+            print("The percentage of " + vennLabel2 + " is:" + sum2 + "%")
+            print("The percentage of " + vennLabel3 + " is:" + sum3 + "%")
+            print("The percentage of intersection between " + vennLabel1 + " and " + vennLabel2 + " is:" + sum1_2 + "%")
+            print("The percentage of intersection between " + vennLabel1 + " and " + vennLabel3 + " is:" + sum1_3 + "%")
+            print("The percentage of intersection between " + vennLabel2 + " and " + vennLabel3 + " is:" + sum2_3 + "%")
+            print("The percentage of the intersection of the three channels is: " + p7 + "%")
+            print("Calculation completed.")
+            print("------------------------------")
+        else:
+            print("Total volume is 0.")
 
         # Display and save the Venn diagram.
         my_dpi = 100
         plt.figure(figsize=(800 / my_dpi, 600 / my_dpi), dpi=my_dpi)
-        venn3_unweighted(subsets=[p1, p2, p3, p4, p5, p6, p7], set_labels=[SelectedChannel, ModifiedChannel_1, ModifiedChannel_2],
+        venn3_unweighted(subsets=[p1, p2, p3, p4, p5, p6, p7],
+                         set_labels=[vennLabel1, vennLabel2, vennLabel3],
                          set_colors=(colors[0], colors[1], colors[2]), alpha=0.6)
         plt.title("Volume Percentage(%)\n" + imageName, fontsize=18)
         Vennimagename = imageName + '_Venn diagram.jpg'
@@ -1155,146 +1120,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         widget.imageWidget.setScaledContents(True)
         widget.imageWidget.show()
 
-    def getIntersectionVolume(self, masterVolume, segmentationNode, selectedId, modifierId):
-        """
-        Compute the volume of all intersections.
-        """
-        segStatLogic = SegmentStatistics.SegmentStatisticsLogic()
-        parameterNode = segStatLogic.getParameterNode()
-        self.applyLogicalEffect(masterVolume, segmentationNode, selectedId, modifierId, "INTERSECT")
-        parameterNode.SetParameter("Segmentation", segmentationNode.GetID())
-        segStatLogic.computeStatistics()
-        stats = segStatLogic.getStatistics()
-        volumeCM3 = stats[selectedId, "LabelmapSegmentStatisticsPlugin.volume_cm3"]
-        return volumeCM3
-
-    def cropAndThresholdVolumes(self, volumes, roiNode, thresholds, imageName):
-        """
-        Crop and threshold the volume within the ROI bounding box.
-        """
-        # Create the annotation ROI for cropping.
-        annotationROI = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLAnnotationROINode")
-        if not roiNode:
-            volRenLogic = slicer.modules.volumerendering.logic()
-            displayNode = volRenLogic.GetFirstVolumeRenderingDisplayNode(volumes[0])
-            displayNode.SetAndObserveROINodeID(annotationROI.GetID())
-            volRenLogic.FitROIToVolume(displayNode)
-        else:
-            xyz = [0, 0, 0]
-            roiNode.GetXYZ(xyz)
-            rxyz = [0, 0, 0]
-            roiNode.GetRadiusXYZ(rxyz)
-            annotationROI.SetXYZ(xyz)
-            annotationROI.SetRadiusXYZ(rxyz)
-
-        # Create the vtkMRMLCropVolumeParametersNode for cropping
-        cropVolumeParameterNode = slicer.vtkMRMLCropVolumeParametersNode()
-        slicer.mrmlScene.AddNode(cropVolumeParameterNode)
-        cropVolumeParameterNode.SetROINodeID(annotationROI.GetID())
-        cropVolumeParameterNode.SetVoxelBased(True)
-
-        # Create the segment editor to get access to effects
-        segmentEditorWidget, segmentEditorNode = self.setupSegmentEditor()
-
-        shNode = slicer.mrmlScene.GetSubjectHierarchyNode()
-        exportFolderItemId = shNode.CreateFolderItem(shNode.GetSceneItemID(), imageName)
-        labelmapVolumeNodes = list()
-        segmentationsLogic = slicer.modules.segmentations.logic()
-
-        for index in range(len(volumes)):
-            volume = volumes[index]
-            lowerThreshold = thresholds[index * 2]
-            upperThreshold = thresholds[index * 2 + 1]
-            croppedVolume = self.cropVolume(volume, cropVolumeParameterNode)
-            croppedVolume.SetName(volume.GetName() + "_C_T")
-
-            # Create the segmentation node
-            segmentationNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
-            segmentationNode.CreateDefaultDisplayNodes()
-
-            # Thresholding
-            self.thresholdVolume(croppedVolume, lowerThreshold, upperThreshold, segmentationNode, segmentEditorWidget,
-                                 segmentEditorNode)
-
-            # Export to labelmap
-            labelmapVolumeNode = slicer.mrmlScene.AddNewNodeByClass('vtkMRMLLabelMapVolumeNode')
-            segmentationsLogic.ExportVisibleSegmentsToLabelmapNode(segmentationNode, labelmapVolumeNode, croppedVolume)
-            labelmapVolumeNodes.append(labelmapVolumeNode)
-
-            # Remove temporary volume node
-            slicer.mrmlScene.RemoveNode(croppedVolume)
-            # Remove temporary segmentation node
-            slicer.mrmlScene.RemoveNode(segmentationNode)
-
-        slicer.mrmlScene.RemoveNode(annotationROI)
-        slicer.mrmlScene.RemoveNode(cropVolumeParameterNode)
-        slicer.mrmlScene.RemoveNode(segmentEditorNode)
-
-        return exportFolderItemId, labelmapVolumeNodes
-
-    def cropVolume(self, inputVolume, cropVolumeParameterNode):
-        """
-        To crop the volume.
-        """
-        cropVolumeParameterNode.SetInputVolumeNodeID(inputVolume.GetID())
-        cropVolumeParameterNode.SetOutputVolumeNodeID(None)
-        slicer.modules.cropvolume.logic().Apply(cropVolumeParameterNode)
-        outputVolumeNodeID = cropVolumeParameterNode.GetOutputVolumeNodeID()
-        croppedVolume = slicer.mrmlScene.GetNodeByID(outputVolumeNodeID)
-        return croppedVolume
-
-    def setupSegmentEditor(self):
-        """
-        To access the segment editor's effects.
-        """
-        segmentEditorWidget = slicer.qMRMLSegmentEditorWidget()
-        segmentEditorNode = slicer.vtkMRMLSegmentEditorNode()
-        slicer.mrmlScene.AddNode(segmentEditorNode)
-        segmentEditorWidget.setMRMLSegmentEditorNode(segmentEditorNode)
-        segmentEditorWidget.setMRMLScene(slicer.mrmlScene)
-        return segmentEditorWidget, segmentEditorNode
-
-    def thresholdVolume(self, inputVolume, lowerThreshold, upperThreshold, segmentationNode, segmentEditorWidget,
-                        segmentEditorNode):
-        """
-        Obtain the specific threshold range of the selected channels for the computation of the colocalization percentage.
-        """
-        inputVolumeName = inputVolume.GetName()
-
-        # Create segment
-        segmentationNode.SetReferenceImageGeometryParameterFromVolumeNode(inputVolume)
-        segmentId = segmentationNode.GetSegmentation().AddEmptySegment(inputVolumeName)
-        segmentEditorWidget.setSegmentationNode(segmentationNode)
-        segmentEditorWidget.setMasterVolumeNode(inputVolume)
-        segmentEditorNode.SetSelectedSegmentID(segmentId)
-        segmentEditorWidget.setActiveEffectByName("Threshold")
-        effect = segmentEditorWidget.activeEffect()
-        effect.setParameter("MinimumThreshold", str(lowerThreshold))
-        effect.setParameter("MaximumThreshold", str(upperThreshold))
-        effect.self().onApply()
-
-    def applyLogicalEffect(self, masterVolume, segmentationNode, segmentId, modifierSegmentID, operation):
-        """
-        Apply the 'intersect operation' of 'Logical operators' to get all intersections.
-        """
-        import SegmentEditorEffects
-        segmentEditorWidget, segmentEditorNode = self.setupSegmentEditor()
-        segmentationNode.SetReferenceImageGeometryParameterFromVolumeNode(masterVolume)
-        segmentationGeometryWidget = slicer.qMRMLSegmentationGeometryWidget()
-        segmentationGeometryWidget.setSegmentationNode(segmentationNode)
-        segmentationGeometryWidget.setReferenceImageGeometryForSegmentationNode()
-        segmentationGeometryWidget.resampleLabelmapsInSegmentationNode()
-        segmentEditorWidget.setSegmentationNode(segmentationNode)
-        segmentEditorWidget.setMasterVolumeNode(masterVolume)
-        segmentEditorNode.SetSelectedSegmentID(segmentId)
-        segmentEditorWidget.setActiveEffectByName('Logical operators')
-        effect = segmentEditorWidget.activeEffect()
-        effect.setParameter("Operation", operation)
-        effect.setParameter("ModifierSegmentID", modifierSegmentID)
-        effect.self().onApply()
-        slicer.mrmlScene.RemoveNode(segmentEditorNode)
-        return segmentationNode
-
 #
 # ColocZStatsTest
 #
@@ -1302,6 +1127,7 @@ class ColocZStatsTest(ScriptedLoadableModuleTest):
     """
     The test case.
     """
+
     def runTest(self):
         self.test_ColocZStats()
 
