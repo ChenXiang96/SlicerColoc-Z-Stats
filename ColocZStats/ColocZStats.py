@@ -964,11 +964,12 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             volumeMM3 = (arrayData > 0).sum()
 
             # Threshold volume data
-            arrayData[arrayData < thresholds[index * 2]] = 0
-            arrayData[arrayData > thresholds[index * 2 + 1]] = 0
-            workVolumes.append(arrayData)
-            volumeMM3 = (arrayData > 0).sum()
-            volumeCM3 = volumeMM3 * 0.001
+            lowerThreshold = thresholds[index * 2]
+            upperThreshold = thresholds[index * 2 + 1]
+            newarrayData = np.logical_and(arrayData>=lowerThreshold, arrayData<=upperThreshold)
+            newvolumeMM3 = (newarrayData > 0).sum()
+            workVolumes.append(newarrayData)
+            volumeCM3 = newvolumeMM3 * 0.001
             singleChannelVolumes.append(volumeCM3)
             selected_channel_name.append(volume.GetName())
 
