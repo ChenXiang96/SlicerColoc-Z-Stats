@@ -29,7 +29,7 @@ The license for this extension is [MIT](https://github.com/ChenXiang96/SlicerCol
 * [Download links to sample image](https://drive.google.com/file/d/1IYlggsikgtQR7jXE83sSS2ZtMCuswsA0/view?usp=sharing)
 
 ## Panels and their use
-* **Volume**: Select the current volume to render and opreate. 
+* **Volume**: Select the current volume to render and operate. 
 * **Display ROI**: Show/hide the ROI bounding box of the current volume.
 * **Re-center ROI**: Reposition the image region selected by the ROI bounding box to the center of the scene:
 
