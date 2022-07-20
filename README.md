@@ -9,7 +9,7 @@ The license for this extension is [MIT](https://github.com/ChenXiang96/SlicerCol
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Screenshots.png" width="800px">
 
 ## Installation
-* The 3D Slicer stable version 5.0.2 is needed to use this module: [version Version 5.0.2](https://download.slicer.org/). Or it can be downloaded from this [link](https://slicer-packages.kitware.com/#collection/5f4474d0e1d8c75dfc70547e/folder/5f4474d0e1d8c75dfc705482)
+* The 3D Slicer stable version 5.0.3 is needed to use this module: [version Version 5.0.3](https://download.slicer.org/). Or it can be downloaded from this [link](https://slicer-packages.kitware.com/#collection/5f4474d0e1d8c75dfc70547e/folder/62cc513eaa08d161a31c1372)
 * This is a Python scripted module. Download the source code from [here](https://github.com/ChenXiang96/SlicerColoc-Z-Stats).
 * Extract downloaded package (for example, to C:\Users\Public).
 * Run 3D Slicer, search for the 'Extension Wizard' extension in the 'Modules' search box at the top and open it. Then click the 'Select Extension' button located under the 'Extension Tools' collapsible button.
