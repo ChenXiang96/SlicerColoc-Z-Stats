@@ -970,7 +970,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             newvolumeMM3 = (newarrayData > 0).sum()
             workVolumes.append(newarrayData)
             volumeCM3 = newvolumeMM3 * 0.001
-            print("Volume of " + volume.GetName() + " is: " + str(volumeCM3))
             singleChannelVolumes.append(volumeCM3)
             selected_channel_name.append(volume.GetName())
 
@@ -982,7 +981,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         if len(workVolumes) == 2:
             volumeMM3 = np.logical_and(workVolumes[0] > 0, workVolumes[1] > 0).sum()
             volumeCM3 = volumeMM3 * 0.001
-            # print("Volume of intersection" + volume.GetName() + " is: " + str(volumeCM3))
             vennLabel1 = selected_channel_name[0].split(imageName + "_")[1]
             vennLabel2 = selected_channel_name[1].split(imageName + "_")[1]
             self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeCM3, colors, vennLabel1, vennLabel2, imageName)
