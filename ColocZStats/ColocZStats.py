@@ -1015,11 +1015,12 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         if float(totalVolumeOfTwoChannels) > 0:
             result1 = (singleChannelVolumes[0] - intersectionVolume) / totalVolumeOfTwoChannels
             result2 = (singleChannelVolumes[1] - intersectionVolume) / totalVolumeOfTwoChannels
+            result3 = intersectionVolume / totalVolumeOfTwoChannels
 
             # Get the specific percentage value corresponding to each part of the Venn diagram.
             p1 = format(result1 * 100, '.4f')
             p2 = format(result2 * 100, '.4f')
-            p3 = format((100 - (float(p1) + float(p2))), '.4f')
+            p3 = format(result3 * 100, '.4f')
             sum1 = format((float(p1) + float(p3)), '.4f')
             sum2 = format((float(p2) + float(p3)), '.4f')
             print("The percentage of " + vennLabel1 + " is: " + sum1 + "%")
@@ -1076,6 +1077,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             result4 = (float(volumeChannel3) - float(intersection_2_3) - (float(intersection_1_3) - float(intersection_1_2_3))) / float(totalVolumeOfThreeChannels)
             result5 = (float(intersection_1_3) - float(intersection_1_2_3)) / float(totalVolumeOfThreeChannels)
             result6 = (float(intersection_2_3) - float(intersection_1_2_3)) / float(totalVolumeOfThreeChannels)
+            result7 = float(intersection_1_2_3) / float(totalVolumeOfThreeChannels)
 
             # Get the specific percentage value corresponding to each part of the Venn diagram.
             p1 = format(result1 * 100, '.4f')
@@ -1084,7 +1086,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             p4 = format(result4 * 100, '.4f')
             p5 = format(result5 * 100, '.4f')
             p6 = format(result6 * 100, '.4f')
-            p7 = format((100 - (float(p1) + float(p2) + float(p3) + float(p4) + float(p5) + float(p6))), '.4f')
+            p7 = format(result7 * 100, '.4f')
 
             sum1_2 = format((float(p3) + float(p7)), '.4f')
             sum1_3 = format((float(p5) + float(p7)), '.4f')
