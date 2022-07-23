@@ -1,8 +1,8 @@
-# Z-Stack Colocalization Statistical tool for 3D Slicer
+# SlicerColoc-Z-Stats (ver. 1.0): A Z-Stack signal colocalization extension tool for 3D Slicer
 ## Overview
-This is an extension for computing the percentage of colocalization(Spatial overlap between different channels) of Z-stack images.
+SlicerColoc-Z-Stats is a 3D Slicer extension for computing 3D proteins' colocalization (spatial overlap between different channels) of Z-stack images.
 
-Users can threshold the volume rendering of the input Z-stack image in the 3D view window, select the region of interest(ROI) by the bounding box, and get a Venn diagram that shows the critical metric of colocalization's percentage.
+Users can set the volume rendering of the Z-stack input image via customizable thresholds within 3D viewports, select the region of interest (ROI) by the bounding box and generate a Venn diagram that displays colocalization metrics.
 
 The license for this extension is [MIT](https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/LICENSE)
 
