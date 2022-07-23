@@ -4,7 +4,7 @@ SlicerColoc-Z-Stats is a 3D Slicer extension for computing 3D proteins' colocali
 
 Users can set the volume rendering of the Z-stack input image via customizable thresholds within 3D viewports, select the region of interest (ROI) by the bounding box and generate a Venn diagram that displays colocalization metrics.
 
-The license for this extension is [MIT](https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/LICENSE)
+The license for this extension is [MIT](https://github.com/benoukraflab/SlicerColoc-Z-Stats/blob/main/LICENSE)
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Screenshots.png" width="800px">
 
