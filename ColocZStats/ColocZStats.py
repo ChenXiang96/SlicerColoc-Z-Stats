@@ -970,6 +970,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             newvolumeMM3 = (newarrayData > 0).sum()
             workVolumes.append(newarrayData)
             volumeCM3 = newvolumeMM3 * 0.001
+            print("Volume of " + volume.GetName() + " is: " + str(volumeCM3))
             singleChannelVolumes.append(volumeCM3)
             selected_channel_name.append(volume.GetName())
 
@@ -981,6 +982,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         if len(workVolumes) == 2:
             volumeMM3 = np.logical_and(workVolumes[0] > 0, workVolumes[1] > 0).sum()
             volumeCM3 = volumeMM3 * 0.001
+            # print("Volume of intersection" + volume.GetName() + " is: " + str(volumeCM3))
             vennLabel1 = selected_channel_name[0].split(imageName + "_")[1]
             vennLabel2 = selected_channel_name[1].split(imageName + "_")[1]
             self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeCM3, colors, vennLabel1, vennLabel2, imageName)
@@ -1017,16 +1019,22 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             result2 = format(((singleChannelVolumes[1] - intersectionVolume) / totalVolumeOfTwoChannels) * 100, '.4f')
             result3 = format((intersectionVolume / totalVolumeOfTwoChannels) * 100, '.4f')
             result_list = [float(result1), float(result2), float(result3)]
-            result_sum = 0
-            for i in result_list:
-                if i != max(result_list):
-                    result_sum += i
-            result_list[result_list.index(max(result_list))] = 100 - result_sum
-            p1 = format(result_list[0], '.4f')
-            p2 = format(result_list[1], '.4f')
-            p3 = format(result_list[2], '.4f')
+            if result_list.count(max(result_list)) == 2 and max(result_list) == 50.0000:
+                p1 = result1
+                p2 = result2
+                p3 = result3
+            else:
+                result_sum = 0
+                for i in result_list:
+                    if i != max(result_list):
+                        result_sum += i
+                result_list[result_list.index(max(result_list))] = 100 - result_sum
 
-            # Get the specific percentage value corresponding to each part of the Venn diagram.
+                # Get the specific percentage value corresponding to each part of the Venn diagram.
+                p1 = format(result_list[0], '.4f')
+                p2 = format(result_list[1], '.4f')
+                p3 = format(result_list[2], '.4f')
+
             sum1 = format((float(p1) + float(p3)), '.4f')
             sum2 = format((float(p2) + float(p3)), '.4f')
             print("The percentage of " + vennLabel1 + " is: " + sum1 + "%")
@@ -1077,6 +1085,14 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         p7 = 0
 
         if float(totalVolumeOfThreeChannels) > 0:
+            print(volumeChannel1)
+            print(volumeChannel2)
+            print(volumeChannel3)
+            print(intersection_1_2)
+            print(intersection_2_3)
+            print(intersection_1_3)
+            print(intersection_1_2_3)
+
             result1 = format(((float(volumeChannel1) - float(intersection_1_2) - (float(intersection_1_3) - float(intersection_1_2_3))) / float(totalVolumeOfThreeChannels)) * 100, '.4f')
             result2 = format(((float(volumeChannel2) - float(intersection_1_2) - (float(intersection_2_3) - float(intersection_1_2_3))) / float(totalVolumeOfThreeChannels)) * 100, '.4f')
             result3 = format(((float(intersection_1_2) - float(intersection_1_2_3)) / float(totalVolumeOfThreeChannels)) * 100, '.4f')
@@ -1086,20 +1102,29 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             result7 = format((float(intersection_1_2_3) / float(totalVolumeOfThreeChannels)) * 100, '.4f')
 
             result_list = [float(result1), float(result2), float(result3), float(result4), float(result5), float(result6), float(result7)]
-            result_sum = 0
-            for i in result_list:
-                if i != max(result_list):
-                    result_sum += i
-            result_list[result_list.index(max(result_list))] = 100 - result_sum
+            if result_list.count(max(result_list)) == 3 and max(result_list) == 33.3333:
+                p1 = result1
+                p2 = result2
+                p3 = result3
+                p4 = result4
+                p5 = result5
+                p6 = result6
+                p7 = result7
+            else:
+                result_sum = 0
+                for i in result_list:
+                    if i != max(result_list):
+                        result_sum += i
+                result_list[result_list.index(max(result_list))] = 100 - result_sum
 
-            # Get the specific percentage value corresponding to each part of the Venn diagram.
-            p1 = format(result_list[0], '.4f')
-            p2 = format(result_list[1], '.4f')
-            p3 = format(result_list[2], '.4f')
-            p4 = format(result_list[3], '.4f')
-            p5 = format(result_list[4], '.4f')
-            p6 = format(result_list[5], '.4f')
-            p7 = format(result_list[6], '.4f')
+                # Get the specific percentage value corresponding to each part of the Venn diagram.
+                p1 = format(result_list[0], '.4f')
+                p2 = format(result_list[1], '.4f')
+                p3 = format(result_list[2], '.4f')
+                p4 = format(result_list[3], '.4f')
+                p5 = format(result_list[4], '.4f')
+                p6 = format(result_list[5], '.4f')
+                p7 = format(result_list[6], '.4f')
 
             sum1_2 = format((float(p3) + float(p7)), '.4f')
             sum1_3 = format((float(p5) + float(p7)), '.4f')
