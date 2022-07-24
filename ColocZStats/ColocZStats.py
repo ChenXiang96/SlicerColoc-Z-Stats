@@ -1083,14 +1083,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         p7 = 0
 
         if float(totalVolumeOfThreeChannels) > 0:
-            print(volumeChannel1)
-            print(volumeChannel2)
-            print(volumeChannel3)
-            print(intersection_1_2)
-            print(intersection_2_3)
-            print(intersection_1_3)
-            print(intersection_1_2_3)
-
             result1 = format(((float(volumeChannel1) - float(intersection_1_2) - (float(intersection_1_3) - float(intersection_1_2_3))) / float(totalVolumeOfThreeChannels)) * 100, '.4f')
             result2 = format(((float(volumeChannel2) - float(intersection_1_2) - (float(intersection_2_3) - float(intersection_1_2_3))) / float(totalVolumeOfThreeChannels)) * 100, '.4f')
             result3 = format(((float(intersection_1_2) - float(intersection_1_2_3)) / float(totalVolumeOfThreeChannels)) * 100, '.4f')
