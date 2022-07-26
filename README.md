@@ -1,4 +1,4 @@
-# SlicerColoc-Z-Stats (ver. 1.0): A Z-Stack signal colocalization extension tool for 3D Slicer
+# SlicerColoc-Z-Stats (ver. 1.0 dev): A Z-Stack signal colocalization extension tool for 3D Slicer
 ## Overview
 SlicerColoc-Z-Stats is a 3D Slicer extension for computing 3D proteins' colocalization (spatial overlap between different channels) of Z-stack images.
 
