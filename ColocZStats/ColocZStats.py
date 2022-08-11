@@ -1050,9 +1050,10 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                          set_colors=(colors[0], colors[1]),
                          alpha=0.6)
         plt.title("Volume Percentage(%)\n" + imageName, fontsize=18)
-        Vennimagename = imageName + '_Venn diagram.jpg'
-        plt.savefig('./' + Vennimagename)
-        pm = qt.QPixmap('./' + Vennimagename)
+        vennImagename = imageName + '_Venn diagram.jpg'
+        vennImagefileLocation = slicer.app.defaultScenePath + "/" + vennImagename
+        plt.savefig(vennImagefileLocation)
+        pm = qt.QPixmap(vennImagefileLocation)
         if not widget.imageWidget:
             widget.imageWidget = qt.QLabel()
         widget.imageWidget.setPixmap(pm)
@@ -1142,9 +1143,10 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                          set_labels=[vennLabel1, vennLabel2, vennLabel3],
                          set_colors=(colors[0], colors[1], colors[2]), alpha=0.6)
         plt.title("Volume Percentage(%)\n" + imageName, fontsize=18)
-        Vennimagename = imageName + '_Venn diagram.jpg'
-        plt.savefig('./' + Vennimagename)
-        pm = qt.QPixmap('./' + Vennimagename)
+        vennImagename = imageName + '_Venn diagram.jpg'
+        vennImagefileLocation = slicer.app.defaultScenePath + "/" + vennImagename
+        plt.savefig(vennImagefileLocation)
+        pm = qt.QPixmap(vennImagefileLocation)
         if not widget.imageWidget:
             widget.imageWidget = qt.QLabel()
         widget.imageWidget.setPixmap(pm)
