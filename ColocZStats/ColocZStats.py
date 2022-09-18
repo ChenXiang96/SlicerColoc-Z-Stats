@@ -5,6 +5,7 @@ import vtk, qt, ctk, slicer
 import SegmentStatistics
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
+from decimal import Decimal
 
 try:
     import matplotlib
@@ -1009,13 +1010,14 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         p1 = 0
         p2 = 0
         p3 = 0
-
-        totalVolumeOfTwoChannels = singleChannelVolumes[0] + singleChannelVolumes[1] - intersectionVolume
-
+        # totalVolumeOfTwoChannels = singleChannelVolumes[0] + singleChannelVolumes[1] - intersectionVolume
+        totalVolumeOfTwoChannels = Decimal(str(singleChannelVolumes[0])) + Decimal(str(singleChannelVolumes[1])) - Decimal(str(intersectionVolume))
         if float(totalVolumeOfTwoChannels) > 0:
-            result1 = format(((singleChannelVolumes[0] - intersectionVolume) / totalVolumeOfTwoChannels) * 100, '.4f')
-            result2 = format(((singleChannelVolumes[1] - intersectionVolume) / totalVolumeOfTwoChannels) * 100, '.4f')
-            result3 = format((intersectionVolume / totalVolumeOfTwoChannels) * 100, '.4f')
+
+            result1 = format((((Decimal(str(singleChannelVolumes[0])) - Decimal(str(intersectionVolume))) / totalVolumeOfTwoChannels) * Decimal(100.0000)) , '.4f')
+            result2 = format((((Decimal(str(singleChannelVolumes[1])) - Decimal(str(intersectionVolume))) / totalVolumeOfTwoChannels) * Decimal(100.0000)) , '.4f')
+            result3 = format((((Decimal(str(intersectionVolume))) / totalVolumeOfTwoChannels) * Decimal(100.0000)), '.4f')
+
             result_list = [float(result1), float(result2), float(result3)]
             if result_list.count(max(result_list)) == 2 and max(result_list) == 50.0000:
                 p1 = result1
@@ -1065,15 +1067,15 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         """
         Draw a Venn diagram showing the colocalization percentage when three channels are selected.
         """
-        volumeChannel1 = format(singleChannelVolumes[0], '.4f')
-        volumeChannel2 = format(singleChannelVolumes[1], '.4f')
-        volumeChannel3 = format(singleChannelVolumes[2], '.4f')
-        intersection_1_2 = format(twoChannelsIntersectionVolumes[0], '.4f')
-        intersection_2_3 = format(twoChannelsIntersectionVolumes[1], '.4f')
-        intersection_1_3 = format(twoChannelsIntersectionVolumes[2], '.4f')
-        intersection_1_2_3 = format(intersection_1_2_3, '.4f')
-        totalVolumeOfTwoChannels = format(float(volumeChannel1) + float(volumeChannel2) - float(intersection_1_2), '.4f')
-        totalVolumeOfThreeChannels = format(float(totalVolumeOfTwoChannels) + float(volumeChannel3) - float(intersection_1_3) - (float(intersection_2_3) - float(intersection_1_2_3)), '.4f')
+        volumeChannel1 = Decimal(format(singleChannelVolumes[0], '.4f'))
+        volumeChannel2 = Decimal(format(singleChannelVolumes[1], '.4f'))
+        volumeChannel3 = Decimal(format(singleChannelVolumes[2], '.4f'))
+        intersection_1_2 = Decimal(format(twoChannelsIntersectionVolumes[0], '.4f'))
+        intersection_2_3 = Decimal(format(twoChannelsIntersectionVolumes[1], '.4f'))
+        intersection_1_3 = Decimal(format(twoChannelsIntersectionVolumes[2], '.4f'))
+        intersection_1_2_3 = Decimal(format(intersection_1_2_3, '.4f'))
+        totalVolumeOfTwoChannels = Decimal(format(float(volumeChannel1) + float(volumeChannel2) - float(intersection_1_2), '.4f'))
+        totalVolumeOfThreeChannels = Decimal(format(float(totalVolumeOfTwoChannels) + float(volumeChannel3) - float(intersection_1_3) - (float(intersection_2_3) - float(intersection_1_2_3)), '.4f'))
 
         p1 = 0
         p2 = 0
@@ -1084,13 +1086,13 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         p7 = 0
 
         if float(totalVolumeOfThreeChannels) > 0:
-            result1 = format(((float(volumeChannel1) - float(intersection_1_2) - (float(intersection_1_3) - float(intersection_1_2_3))) / float(totalVolumeOfThreeChannels)) * 100, '.4f')
-            result2 = format(((float(volumeChannel2) - float(intersection_1_2) - (float(intersection_2_3) - float(intersection_1_2_3))) / float(totalVolumeOfThreeChannels)) * 100, '.4f')
-            result3 = format(((float(intersection_1_2) - float(intersection_1_2_3)) / float(totalVolumeOfThreeChannels)) * 100, '.4f')
-            result4 = format(((float(volumeChannel3) - float(intersection_2_3) - (float(intersection_1_3) - float(intersection_1_2_3))) / float(totalVolumeOfThreeChannels)) * 100, '.4f')
-            result5 = format(((float(intersection_1_3) - float(intersection_1_2_3)) / float(totalVolumeOfThreeChannels)) * 100, '.4f')
-            result6 = format(((float(intersection_2_3) - float(intersection_1_2_3)) / float(totalVolumeOfThreeChannels)) * 100, '.4f')
-            result7 = format((float(intersection_1_2_3) / float(totalVolumeOfThreeChannels)) * 100, '.4f')
+            result1 = format(((((volumeChannel1 - intersection_1_2) - (intersection_1_3 - intersection_1_2_3)) / totalVolumeOfThreeChannels) * Decimal(100.0000)) , '.4f')
+            result2 = format(((((volumeChannel2 - intersection_1_2) - (intersection_2_3 - intersection_1_2_3)) / totalVolumeOfThreeChannels) * Decimal(100.0000)) , '.4f')
+            result3 = format(((((intersection_1_2 - intersection_1_2_3) / totalVolumeOfThreeChannels)) * Decimal(100.0000)) , '.4f')
+            result4 = format(((((volumeChannel3 - intersection_2_3) - (intersection_1_3 - intersection_1_2_3)) / totalVolumeOfThreeChannels) * Decimal(100.0000)), '.4f')
+            result5 = format((((intersection_1_3 - intersection_1_2_3) / totalVolumeOfThreeChannels) * Decimal(100.0000)) , '.4f')
+            result6 = format((((intersection_2_3 - intersection_1_2_3) / totalVolumeOfThreeChannels) * Decimal(100.0000)), '.4f')
+            result7 = format(((intersection_1_2_3 / totalVolumeOfThreeChannels)  * Decimal(100.0000)), '.4f')
 
             result_list = [float(result1), float(result2), float(result3), float(result4), float(result5), float(result6), float(result7)]
             if result_list.count(max(result_list)) == 3 and max(result_list) == 33.3333:
