@@ -5,13 +5,19 @@ import vtk, qt, ctk, slicer
 import SegmentStatistics
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
-from decimal import Decimal
 
 try:
     import matplotlib
 except ModuleNotFoundError:
     slicer.util.pip_install("matplotlib")
     import matplotlib
+
+try:
+    import decimal
+except ModuleNotFoundError:
+    slicer.util.pip_install("decimal")
+    import decimal
+from decimal import Decimal
 
 import sys
 
@@ -970,7 +976,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             newarrayData = np.logical_and(arrayData>=lowerThreshold, arrayData<=upperThreshold)
             newvolumeMM3 = (newarrayData > 0).sum()
             workVolumes.append(newarrayData)
-            volumeCM3 = newvolumeMM3 * 0.001
+            volumeCM3 = Decimal(str(newvolumeMM3)) * Decimal('0.001')
             singleChannelVolumes.append(volumeCM3)
             selected_channel_name.append(volume.GetName())
 
@@ -981,7 +987,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         # Computes two channels intersection if there are only two channels
         if len(workVolumes) == 2:
             volumeMM3 = np.logical_and(workVolumes[0] > 0, workVolumes[1] > 0).sum()
-            volumeCM3 = volumeMM3 * 0.001
+            volumeCM3 = Decimal(str(volumeMM3)) * Decimal('0.001')
             vennLabel1 = selected_channel_name[0].split(imageName + "_")[1]
             vennLabel2 = selected_channel_name[1].split(imageName + "_")[1]
             self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeCM3, colors, vennLabel1, vennLabel2, imageName)
@@ -993,11 +999,11 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             if secondIndex == 3:
                 secondIndex = 0
             volumeMM3 = np.logical_and(workVolumes[index] > 0, workVolumes[secondIndex] > 0).sum()
-            volumeCM3 = volumeMM3 * 0.001
+            volumeCM3 = Decimal(str(volumeMM3)) * Decimal('0.001')
             twoChannelsIntersectionVolumes.append(volumeCM3)
 
         volumeMM3 = np.logical_and(np.logical_and(workVolumes[0] > 0, workVolumes[1] > 0), workVolumes[2] > 0).sum()
-        volumeCM3 = volumeMM3 * 0.001
+        volumeCM3 = Decimal(str(volumeMM3)) * Decimal('0.001')
         vennLabel1 = selected_channel_name[0].split(imageName + "_")[1]
         vennLabel2 = selected_channel_name[1].split(imageName + "_")[1]
         vennLabel3 = selected_channel_name[2].split(imageName + "_")[1]
@@ -1010,33 +1016,31 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         p1 = 0
         p2 = 0
         p3 = 0
-        # totalVolumeOfTwoChannels = singleChannelVolumes[0] + singleChannelVolumes[1] - intersectionVolume
-        totalVolumeOfTwoChannels = Decimal(str(singleChannelVolumes[0])) + Decimal(str(singleChannelVolumes[1])) - Decimal(str(intersectionVolume))
+        totalVolumeOfTwoChannels = singleChannelVolumes[0] + singleChannelVolumes[1] - intersectionVolume
         if float(totalVolumeOfTwoChannels) > 0:
 
-            result1 = format((((Decimal(str(singleChannelVolumes[0])) - Decimal(str(intersectionVolume))) / totalVolumeOfTwoChannels) * Decimal(100.0000)) , '.4f')
-            result2 = format((((Decimal(str(singleChannelVolumes[1])) - Decimal(str(intersectionVolume))) / totalVolumeOfTwoChannels) * Decimal(100.0000)) , '.4f')
-            result3 = format((((Decimal(str(intersectionVolume))) / totalVolumeOfTwoChannels) * Decimal(100.0000)), '.4f')
 
-            result_list = [float(result1), float(result2), float(result3)]
-            if result_list.count(max(result_list)) == 2 and max(result_list) == 50.0000:
+            result1 = format(float(((singleChannelVolumes[0] - intersectionVolume) / totalVolumeOfTwoChannels) * Decimal('100.0000')) , '.4f')
+            result2 = format(float(((singleChannelVolumes[1] - intersectionVolume) / totalVolumeOfTwoChannels) * Decimal('100.0000')) , '.4f')
+            result3 = format(float((intersectionVolume / totalVolumeOfTwoChannels) * Decimal('100.0000')) , '.4f')
+            result_list = [Decimal(result1), Decimal(result2), Decimal(result3)]
+            if result_list.count(max(result_list)) == 2 and max(result_list) == Decimal('50.0000'):
                 p1 = result1
                 p2 = result2
                 p3 = result3
             else:
-                result_sum = 0
+                result_sum = Decimal('0.0000')
                 for i in result_list:
                     if i != max(result_list):
                         result_sum += i
-                result_list[result_list.index(max(result_list))] = 100 - result_sum
+                result_list[result_list.index(max(result_list))] = Decimal('100.0000') - result_sum
 
                 # Get the specific percentage value corresponding to each part of the Venn diagram.
-                p1 = format(result_list[0], '.4f')
-                p2 = format(result_list[1], '.4f')
-                p3 = format(result_list[2], '.4f')
-
-            sum1 = format((float(p1) + float(p3)), '.4f')
-            sum2 = format((float(p2) + float(p3)), '.4f')
+                p1 = format(float(result_list[0]), '.4f')
+                p2 = format(float(result_list[1]), '.4f')
+                p3 = format(float(result_list[2]), '.4f')
+            sum1 = format(float((result_list[0] + result_list[2])) , '.4f')
+            sum2 = format(float((result_list[1] + result_list[2])), '.4f')
             print("The percentage of " + vennLabel1 + " is: " + sum1 + "%")
             print("The percentage of " + vennLabel2 + " is: " + sum2 + "%")
             print("The percentage of intersection between " + vennLabel1 + " and " + vennLabel2 + " is:" + p3 + "%")
@@ -1067,15 +1071,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         """
         Draw a Venn diagram showing the colocalization percentage when three channels are selected.
         """
-        volumeChannel1 = Decimal(format(singleChannelVolumes[0], '.4f'))
-        volumeChannel2 = Decimal(format(singleChannelVolumes[1], '.4f'))
-        volumeChannel3 = Decimal(format(singleChannelVolumes[2], '.4f'))
-        intersection_1_2 = Decimal(format(twoChannelsIntersectionVolumes[0], '.4f'))
-        intersection_2_3 = Decimal(format(twoChannelsIntersectionVolumes[1], '.4f'))
-        intersection_1_3 = Decimal(format(twoChannelsIntersectionVolumes[2], '.4f'))
-        intersection_1_2_3 = Decimal(format(intersection_1_2_3, '.4f'))
-        totalVolumeOfTwoChannels = Decimal(format(float(volumeChannel1) + float(volumeChannel2) - float(intersection_1_2), '.4f'))
-        totalVolumeOfThreeChannels = Decimal(format(float(totalVolumeOfTwoChannels) + float(volumeChannel3) - float(intersection_1_3) - (float(intersection_2_3) - float(intersection_1_2_3)), '.4f'))
+        totalVolumeOfTwoChannels = singleChannelVolumes[0] + singleChannelVolumes[1] - twoChannelsIntersectionVolumes[0]
+        totalVolumeOfThreeChannels = totalVolumeOfTwoChannels + singleChannelVolumes[2] - twoChannelsIntersectionVolumes[2] - (twoChannelsIntersectionVolumes[1] - intersection_1_2_3)
 
         p1 = 0
         p2 = 0
@@ -1086,16 +1083,15 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         p7 = 0
 
         if float(totalVolumeOfThreeChannels) > 0:
-            result1 = format(((((volumeChannel1 - intersection_1_2) - (intersection_1_3 - intersection_1_2_3)) / totalVolumeOfThreeChannels) * Decimal(100.0000)) , '.4f')
-            result2 = format(((((volumeChannel2 - intersection_1_2) - (intersection_2_3 - intersection_1_2_3)) / totalVolumeOfThreeChannels) * Decimal(100.0000)) , '.4f')
-            result3 = format(((((intersection_1_2 - intersection_1_2_3) / totalVolumeOfThreeChannels)) * Decimal(100.0000)) , '.4f')
-            result4 = format(((((volumeChannel3 - intersection_2_3) - (intersection_1_3 - intersection_1_2_3)) / totalVolumeOfThreeChannels) * Decimal(100.0000)), '.4f')
-            result5 = format((((intersection_1_3 - intersection_1_2_3) / totalVolumeOfThreeChannels) * Decimal(100.0000)) , '.4f')
-            result6 = format((((intersection_2_3 - intersection_1_2_3) / totalVolumeOfThreeChannels) * Decimal(100.0000)), '.4f')
-            result7 = format(((intersection_1_2_3 / totalVolumeOfThreeChannels)  * Decimal(100.0000)), '.4f')
-
-            result_list = [float(result1), float(result2), float(result3), float(result4), float(result5), float(result6), float(result7)]
-            if result_list.count(max(result_list)) == 3 and max(result_list) == 33.3333:
+            result1 = format(float((((singleChannelVolumes[0] - twoChannelsIntersectionVolumes[0]) - (twoChannelsIntersectionVolumes[2] - intersection_1_2_3)) / totalVolumeOfThreeChannels) * Decimal('100.0000')), '.4f')
+            result2 = format(float((((singleChannelVolumes[1] - twoChannelsIntersectionVolumes[0]) - (twoChannelsIntersectionVolumes[1] - intersection_1_2_3)) / totalVolumeOfThreeChannels) * Decimal('100.0000')), '.4f')
+            result3 = format(float(((twoChannelsIntersectionVolumes[0] - intersection_1_2_3) / totalVolumeOfThreeChannels) * Decimal('100.0000')), '.4f')
+            result4 = format(float((((singleChannelVolumes[2] - twoChannelsIntersectionVolumes[1]) - (twoChannelsIntersectionVolumes[2] - intersection_1_2_3)) / totalVolumeOfThreeChannels) * Decimal('100.0000')) , '.4f')
+            result5 = format(float(((twoChannelsIntersectionVolumes[2] -intersection_1_2_3) / totalVolumeOfThreeChannels) * Decimal('100.0000')), '.4f')
+            result6 = format(float(((twoChannelsIntersectionVolumes[1] - intersection_1_2_3) / totalVolumeOfThreeChannels) * Decimal('100.0000')), '.4f')
+            result7 = format(float((intersection_1_2_3 / totalVolumeOfThreeChannels) * Decimal('100.0000')), '.4f')
+            result_list = [Decimal(result1), Decimal(result2), Decimal(result3), Decimal(result4), Decimal(result5), Decimal(result6), Decimal(result7)]
+            if result_list.count(max(result_list)) == 3 and max(result_list) == Decimal('33.3333'):
                 p1 = result1
                 p2 = result2
                 p3 = result3
@@ -1104,27 +1100,26 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                 p6 = result6
                 p7 = result7
             else:
-                result_sum = 0
+                result_sum = Decimal('0.0000')
                 for i in result_list:
                     if i != max(result_list):
                         result_sum += i
-                result_list[result_list.index(max(result_list))] = 100 - result_sum
+                result_list[result_list.index(max(result_list))] = Decimal('100.0000') - result_sum
 
                 # Get the specific percentage value corresponding to each part of the Venn diagram.
-                p1 = format(result_list[0], '.4f')
-                p2 = format(result_list[1], '.4f')
-                p3 = format(result_list[2], '.4f')
-                p4 = format(result_list[3], '.4f')
-                p5 = format(result_list[4], '.4f')
-                p6 = format(result_list[5], '.4f')
-                p7 = format(result_list[6], '.4f')
-
-            sum1_2 = format((float(p3) + float(p7)), '.4f')
-            sum1_3 = format((float(p5) + float(p7)), '.4f')
-            sum2_3 = format((float(p6) + float(p7)), '.4f')
-            sum1 = format((float(p1) + float(p5) + float(p3) + float(p7)), '.4f')
-            sum2 = format((float(p2) + float(p6) + float(p3) + float(p7)), '.4f')
-            sum3 = format((float(p4) + float(p5) + float(p6) + float(p7)), '.4f')
+                p1 = format(float(result_list[0]), '.4f')
+                p2 = format(float(result_list[1]), '.4f')
+                p3 = format(float(result_list[2]), '.4f')
+                p4 = format(float(result_list[3]), '.4f')
+                p5 = format(float(result_list[4]), '.4f')
+                p6 = format(float(result_list[5]), '.4f')
+                p7 = format(float(result_list[6]), '.4f')
+            sum1_2 = format(float((result_list[2] + result_list[6])), '.4f')
+            sum1_3 = format(float((result_list[4] + result_list[6])), '.4f')
+            sum2_3 = format(float((result_list[5] + result_list[6])), '.4f')
+            sum1 = format(float((result_list[0] + result_list[4] + result_list[2] + result_list[6])), '.4f')
+            sum2 = format(float((result_list[1] + result_list[5] + result_list[2] + result_list[6])), '.4f')
+            sum3 = format(float((result_list[3] + result_list[4] + result_list[5] + result_list[6])), '.4f')
 
             print("The percentage of " + vennLabel1 + " is:" + sum1 + "%")
             print("The percentage of " + vennLabel2 + " is:" + sum2 + "%")
