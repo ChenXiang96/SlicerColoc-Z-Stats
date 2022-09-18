@@ -10,18 +10,12 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 
 ## Installation
 * The 3D Slicer stable version 5.0.3 is needed to use this module: [version Version 5.0.3](https://download.slicer.org/). Or it can be downloaded from this [link](https://slicer-packages.kitware.com/#collection/5f4474d0e1d8c75dfc70547e/folder/62cc513eaa08d161a31c1372)
-* Method 1:
   * Open “Extensions Manager” using menu: View / Extensions manager. On macOS, Extensions manager requires the [application to be installed](https://slicer.readthedocs.io/en/latest/user_guide/getting_started.html#mac).
   * Go to “Install extensions” tab
   * Go to “Quantification” category
   * Click “Install” button of “ColocZStats” to install it.
   * Wait until “Restart” button in the lower-right corner becomes enabled, then click “Restart”.
   * For more information on how to install extension via the “Extensions Manager”, see this [link](https://slicer.readthedocs.io/en/latest/user_guide/extensions_manager.html#install-extensions).
-* Method 2:
-  * This is a Python scripted module. Download the source code from [here](https://github.com/ChenXiang96/SlicerColoc-Z-Stats).
-  * Extract downloaded package (for example, to C:\Users\Public).
-  * Run 3D Slicer, search for the 'Extension Wizard' extension in the 'Modules' search box at the top and open it. Then click the 'Select Extension' button located under the 'Extension Tools' collapsible button.
-  * Select the path of this module to import it to Slicer(for example, C:\Users\Public\SlicerColoc-Z-Stats-main).
 
 ## Tutorial
 * Start 3D Slicer
