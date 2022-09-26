@@ -57,13 +57,12 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/8bc47b362af492a670309f1a7302062beb1d6d2e/Images/Rename%20Channel%20button.gif" width="600px">
 
 * **Annotation**: A text field for users to add annotations.
-* 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Annotations.gif" width="600px">
 
 
-* **Compute Colocalization**: Compute the image's colocalization percentage within the current ROI, and draw a Venn diagram to show the percentage.
+* **Compute Colocalization**: Compute the image's colocalization percentage within the current ROI, draw a Venn diagram to show the percentage, and generate a spreadsheet that contains the names of all selected channels when the 'Compute Colocalization' button is clicked, all corresponding threshold ranges, the image's colocalization percentage within the ROI, and the ROI information (Center, Orientation, Size).
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Compute%20Colocalization.gif" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/b5fae789cc528d022f81c96570133e9a3c8d0c61/Images/Compute%20Colocalization.gif" width="600px">
 
 
 ## Authors/Contributors:
