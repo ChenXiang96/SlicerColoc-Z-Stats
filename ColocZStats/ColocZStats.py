@@ -1053,7 +1053,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         # Save the ROI node into into a markups json file.
         roiNode.AddDefaultStorageNode()
-        slicer.util.saveNode(roiNode, slicer.app.defaultScenePath + "/" + imageName + " ROI.mrk.json")
+        jsonFileName = slicer.app.defaultScenePath + "/" + imageName + " ROI.mrk.json"
+        slicer.util.saveNode(roiNode, jsonFileName)
 
         # Get cropped and thresholded volume data in numpy array
         cropVolLogic = slicer.modules.cropvolume.logic()
@@ -1111,7 +1112,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             else:
                 ChannelLabel2_in_csv = imageName + "_" + selectedChannelLabel2
 
-            self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeCM3, lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix)
+            self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeCM3, lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName)
             return
 
         twoChannelsIntersectionVolumes = list()
@@ -1144,9 +1145,9 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         else:
             ChannelLabel3_in_csv = imageName + "_" + selectedChannelLabel3
 
-        self.drawVennForThreeChannels(widget, singleChannelVolumes, twoChannelsIntersectionVolumes, volumeCM3,lowerThresholdList,upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, selectedChannelLabel3, ChannelLabel1_in_csv, ChannelLabel2_in_csv, ChannelLabel3_in_csv, imageName, coords, roiSize, orientationMatrix)
+        self.drawVennForThreeChannels(widget, singleChannelVolumes, twoChannelsIntersectionVolumes, volumeCM3,lowerThresholdList,upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, selectedChannelLabel3, ChannelLabel1_in_csv, ChannelLabel2_in_csv, ChannelLabel3_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName)
 
-    def drawVennForTwoChannels(self, widget, singleChannelVolumes, intersectionVolume,lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix):
+    def drawVennForTwoChannels(self, widget, singleChannelVolumes, intersectionVolume,lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName):
         """
         Draw a Venn diagram showing the colocalization percentage when only two channels are selected.
         """
@@ -1216,8 +1217,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         volume_colocalization_column_4 = [str(upperThresholdList[0]), str(upperThresholdList[1])]
         cell_colocalization = {'Colocalization Statistics': volume_colocalization_column_1, 'Volume overlaps': volume_colocalization_column_2, 'Threshold range (min)': volume_colocalization_column_3, 'Threshold range (max)': volume_colocalization_column_4}
 
-        ROI_Information_column_1 = ["Coordinate System: ", "Center: ", "Orientation: ", "Size: ", imageName +" ROI JSON File location: "]
-        ROI_Information_column_2 = ["LPS", coords_str, orientation_str, roiSize_str,slicer.app.defaultScenePath]
+        ROI_Information_column_1 = ["Coordinate System: ", "Center: ", "Orientation: ", "Size: ", "ROI JSON File location: "]
+        ROI_Information_column_2 = ["LPS", coords_str, orientation_str, roiSize_str, jsonFileName]
         ROI_Information = {"ROI Information": ROI_Information_column_1, "Values": ROI_Information_column_2}
 
         df1 = pd.DataFrame.from_dict(cell_colocalization, orient='index')
@@ -1225,12 +1226,12 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         df2 = pd.DataFrame.from_dict(ROI_Information, orient='index')
         df2 = df2.transpose()
         writer = pd.ExcelWriter(imageName + ' Statistics.xlsx', engine='xlsxwriter')
-        df1.to_excel(writer, sheet_name=imageName + ' Colocalization', index=False)
-        df2.to_excel(writer, sheet_name=imageName + ' ROI Information', header=False, index=False)
+        df1.to_excel(writer, sheet_name = 'Colocalization', index=False)
+        df2.to_excel(writer, sheet_name = 'ROI Information', header=False, index=False)
         writer.save()
 
     def drawVennForThreeChannels(self, widget, singleChannelVolumes, twoChannelsIntersectionVolumes, intersection_1_2_3,
-                                 lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, selectedChannelLabel3,  ChannelLabel1_in_csv, ChannelLabel2_in_csv, ChannelLabel3_in_csv, imageName, coords, roiSize, orientationMatrix):
+                                 lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, selectedChannelLabel3,  ChannelLabel1_in_csv, ChannelLabel2_in_csv, ChannelLabel3_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName):
         """
         Draw a Venn diagram showing the colocalization percentage when three channels are selected.
         """
@@ -1319,8 +1320,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         widget.imageWidget.show()
 
         # Create a spreadsheet to save the colocalization and ROI information.
-        coords_str = "[" + str(coords[0]) + ", " + str(coords[1]) + ", " + str(coords[2]) + "]"
-        orientation_str = "[" + str(orientationMatrix[0]) + ", " + str(orientationMatrix[1]) + ", " + str(orientationMatrix[2]) + ", " + str(orientationMatrix[3])  + ", " + str(orientationMatrix[4]) + ", " + str(orientationMatrix[5]) + ", " + str(orientationMatrix[6]) + ", " + str(orientationMatrix[7]) + ", " + str(orientationMatrix[8]) + "]"
+        coords_str = "[" + str(-coords[0]) + ", " + str(-coords[1]) + ", " + str(coords[2]) + "]"
+        orientation_str = "[" + str(-orientationMatrix[0]) + ", " + str(-orientationMatrix[1]) + ", " + str(-orientationMatrix[2]) + ", " + str(-orientationMatrix[3])  + ", " + str(-orientationMatrix[4]) + ", " + str(-orientationMatrix[5]) + ", " + str(orientationMatrix[6]) + ", " + str(orientationMatrix[7]) + ", " + str(orientationMatrix[8]) + "]"
         roiSize_str = "[" + str(roiSize[0]) + ", " + str(roiSize[1]) + ", " + str(roiSize[2]) + "]"
 
         volume_colocalization_column_1 = [ChannelLabel1_in_csv + " (includes all intersections)", ChannelLabel2_in_csv+ " (includes all intersections)",ChannelLabel3_in_csv+ " (includes all intersections)", ChannelLabel1_in_csv + " ∩ " + ChannelLabel2_in_csv, ChannelLabel1_in_csv + " ∩ " + ChannelLabel3_in_csv, ChannelLabel2_in_csv + " ∩ " + ChannelLabel3_in_csv, ChannelLabel1_in_csv + " ∩ " + ChannelLabel2_in_csv + " ∩ " + ChannelLabel3_in_csv]
@@ -1329,8 +1330,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         volume_colocalization_column_4 = [str(upperThresholdList[0]), str(upperThresholdList[1]), str(upperThresholdList[2])]
         cell_colocalization = {'Colocalization Statistics': volume_colocalization_column_1, 'Volume overlaps': volume_colocalization_column_2, 'Threshold range (min)': volume_colocalization_column_3, 'Threshold range (max)': volume_colocalization_column_4}
 
-        ROI_Information_column_1 = ["Coordinate System: ", "Center: ", "Orientation: ", "Size: ", imageName +" ROI JSON File location: "]
-        ROI_Information_column_2 = ["LPS", coords_str, orientation_str, roiSize_str,slicer.app.defaultScenePath]
+        ROI_Information_column_1 = ["Coordinate System: ", "Center: ", "Orientation: ", "Size: ", "ROI JSON File location: "]
+        ROI_Information_column_2 = ["LPS", coords_str, orientation_str, roiSize_str, jsonFileName]
         ROI_Information = {"ROI Information": ROI_Information_column_1, "Values": ROI_Information_column_2}
 
         df1 = pd.DataFrame.from_dict(cell_colocalization, orient = 'index')
@@ -1338,8 +1339,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         df2 = pd.DataFrame.from_dict(ROI_Information, orient = 'index')
         df2 = df2.transpose()
         writer = pd.ExcelWriter( imageName + ' Statistics.xlsx', engine='xlsxwriter')
-        df1.to_excel(writer, sheet_name=imageName +' Colocalization', index=False)
-        df2.to_excel(writer, sheet_name=imageName +' ROI Information',header=False, index=False)
+        df1.to_excel(writer, sheet_name = 'Colocalization', index=False)
+        df2.to_excel(writer, sheet_name = 'ROI Information',header=False, index=False)
         writer.save()
 
 
