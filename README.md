@@ -62,7 +62,7 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 
 * **Compute Colocalization**: Compute the image's colocalization percentage within the current ROI, draw a Venn diagram to show the percentage, and generate a spreadsheet that contains the names of all selected channels, all corresponding threshold ranges, the image's colocalization percentage within the ROI, and the ROI information (Center, Orientation, Size).
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/b5fae789cc528d022f81c96570133e9a3c8d0c61/Images/Compute%20Colocalization.gif" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/84f007972cc041d6b90c2d965b924c78b76b694a/Images/Compute%20Colocalization.gif" width="600px">
 
 
 ## Authors/Contributors:
