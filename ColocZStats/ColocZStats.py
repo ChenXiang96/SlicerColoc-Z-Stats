@@ -321,6 +321,13 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         if text:
             newName = str(text)
             comboBox.setItemText(comboBox.currentIndex, newName)
+            groupBox = self.uiGroupDict[filename]
+            checkBoxes = groupBox.findChildren(qt.QCheckBox)
+            for index in range(len(channelVolumeList)):
+                if channelVolumeList[index]:
+                    name = newName + "_" + checkBoxes[index].text
+                    channelVolumeList[index].SetName(name)
+            self.updateParameterNodeFromGUI()
             roiNode = None
             if filename in self.ROINodeDict:
                 roiNode = self.ROINodeDict[filename]
@@ -328,12 +335,8 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 roiNode.SetName(newName + " ROI")
             else:
                 return
-            groupBox = self.uiGroupDict[filename]
-            checkBoxes = groupBox.findChildren(qt.QCheckBox)
-            for index in range(len(channelVolumeList)):
-                if channelVolumeList[index]:
-                    name = newName + "_" + checkBoxes[index].text
-                    channelVolumeList[index].SetName(name)
+
+
 
     def onDeleteButtonClicked(self):
         """
