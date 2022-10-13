@@ -804,54 +804,69 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         import numpy as np
         print("Loaded image: " + filename)
         tif = tifffile.TiffFile(filename)
-
         nodeName = node.GetName()
         layout = qt.QVBoxLayout()
         channelVolumeList = list()
 
         # Find channel dimension to determine how many channels are in the input image.
         channelDim = -1
+        ZDim = -1
         axes = tif.series[0].axes
+        image = tif.asarray()
+        for index in range(0, len(axes)):
+            if axes[index] == 'Z':
+                ZDim = index
+                break
+
         for index in range(0, len(axes)):
             if axes[index] == 'C':
                 channelDim = index
                 break
-        image = tif.asarray()
-        if channelDim != -1:
-            image = np.moveaxis(image, channelDim, 0)
-            channelNum = image.shape[0]
-            if channelNum > 15:
-                text = "Does not support image with channels more than 15."
-                msg = qt.QMessageBox()
-                msg.setIcon(qt.QMessageBox.Warning)
-                msg.setText(text)
-                msg.setStandardButtons(qt.QMessageBox.Ok)
-                msg.exec_()
-                slicer.mrmlScene.RemoveNode(node)
-                return
+        if ZDim == -1:
+            text = "Z-stacked image required."
+            msg = qt.QMessageBox()
+            msg.setIcon(qt.QMessageBox.Warning)
+            msg.setText(text)
+            msg.setStandardButtons(qt.QMessageBox.Ok)
+            msg.exec_()
+            slicer.mrmlScene.RemoveNode(node)
+            return
 
-            dimNum = len(image.shape)
-            if channelDim == -1 or dimNum < 4:
-                if channelDim != -1 and dimNum == 4:
-                    channelLabelName = nodeName
-                    channelVolumeList.append(self.createVolumeForChannel(image[0, :, :, :], cyanNode.GetID(), layout, nodeName, widget,channelLabelName))
-                elif dimNum == 3:
-                    channelLabelName = nodeName
-                    channelVolumeList.append(self.createVolumeForChannel(image, cyanNode.GetID(), layout, nodeName, widget,channelLabelName))
-                if len(channelVolumeList) == 0:
+        elif ZDim != -1:
+            if channelDim != -1:
+                image = np.moveaxis(image, channelDim, 0)
+                channelNum = image.shape[0]
+                if channelNum > 15:
+                    text = "Does not support image with channels more than 15."
+                    msg = qt.QMessageBox()
+                    msg.setIcon(qt.QMessageBox.Warning)
+                    msg.setText(text)
+                    msg.setStandardButtons(qt.QMessageBox.Ok)
+                    msg.exec_()
+                    slicer.mrmlScene.RemoveNode(node)
                     return
 
-            if len(channelVolumeList) == 0:
-                for component in range(channelNum):
-                    componentImage = image[component, :, :, :]
-                    name = nodeName + "_" + "Channel " + str(component + 1)
-                    channelLabelName = name.split("_")[-1]
-                    channelVolume = self.createVolumeForChannel(componentImage, colorIds[component], layout, name, widget,channelLabelName)
-                    channelVolumeList.append(channelVolume)
-        else:
-            channelLabelName = node.GetName()
-            self.initializeVolume(node, greyNode.GetID(), layout, widget, channelLabelName)
-            channelVolumeList.append(node)
+                dimNum = len(image.shape)
+                if dimNum == 4:
+                    for component in range(channelNum):
+                        componentImage = image[component, :, :, :]
+                        name = nodeName + "_" + "Channel " + str(component + 1)
+                        channelLabelName = name.split("_")[-1]
+                        channelVolume = self.createVolumeForChannel(componentImage, colorIds[component], layout, name, widget,channelLabelName)
+                        channelVolumeList.append(channelVolume)
+                else:
+                    text = "Image data dimension are incompatible. Expected 4. Got " + str(dimNum)
+                    msg = qt.QMessageBox()
+                    msg.setIcon(qt.QMessageBox.Warning)
+                    msg.setText(text)
+                    msg.setStandardButtons(qt.QMessageBox.Ok)
+                    msg.exec_()
+                    slicer.mrmlScene.RemoveNode(node)
+
+            else:
+                channelLabelName = node.GetName()
+                self.initializeVolume(node, greyNode.GetID(), layout, widget, channelLabelName)
+                channelVolumeList.append(node)
 
         # Update threshold sliders for all channels.
         widget.volumeDict[filename] = channelVolumeList
@@ -889,10 +904,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         """
         Create a volume for each channel to control.
         """
-        if len(componentImage.shape) != 3:
-            print("Image data dimension wrong. Expected 3. Got " + str(len(componentImage.shape)))
-            return
-
         scalarVolumeNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLScalarVolumeNode")
         scalarVolumeNode.SetName(name)
         slicer.util.updateVolumeFromArray(scalarVolumeNode, componentImage)
@@ -909,7 +920,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         displayNode.SetVisibility(True)
 
         # Create widgets for channel volume node
-        # The name of each channel.
         name = scalarVolumeNode.GetName()
         subHorizontallayout = qt.QHBoxLayout()
         checkBox = qt.QCheckBox(channelLabelName)
@@ -929,7 +939,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         threshold.connect('thresholdValuesChanged(double, double)', lambda lower, upper: self.updateThresholdOnVolume(scalarVolumeNode, lower, upper, widget,threshold))
         layout.addItem(subHorizontallayout)
         layout.addWidget(threshold)
-
 
     def onRenameChannelButtonClicked(self, volumeNode,subHorizontallayout, checkBox, widget):
         """
@@ -977,8 +986,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         else:
             return
         selectedVolumes, thresholds, selectedColors,selectedChannelLabels = self.getSelectedVolumes(channelVolumeList, widget.uiGroupDict[filename])
-
-
 
         # Get all checked channels.
         selectedVolumeCount = len(selectedVolumes)
@@ -1228,7 +1235,9 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         df1 = df1.transpose()
         df2 = pd.DataFrame.from_dict(ROI_Information, orient='index')
         df2 = df2.transpose()
-        writer = pd.ExcelWriter(imageName + ' Statistics.xlsx', engine='xlsxwriter')
+
+        excel_out_path = slicer.app.defaultScenePath + "/" + imageName + " Statistics.xlsx"
+        writer = pd.ExcelWriter(excel_out_path , engine='xlsxwriter')
         df1.to_excel(writer, sheet_name = 'Colocalization', index=False)
         df2.to_excel(writer, sheet_name = 'ROI Information', header=False, index=False)
         writer.save()
@@ -1341,7 +1350,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         df1 = df1.transpose()
         df2 = pd.DataFrame.from_dict(ROI_Information, orient = 'index')
         df2 = df2.transpose()
-        writer = pd.ExcelWriter( imageName + ' Statistics.xlsx', engine='xlsxwriter')
+        excel_out_path = slicer.app.defaultScenePath + "/" + imageName + " Statistics.xlsx"
+        writer = pd.ExcelWriter(excel_out_path, engine='xlsxwriter')
         df1.to_excel(writer, sheet_name = 'Colocalization', index=False)
         df2.to_excel(writer, sheet_name = 'ROI Information',header=False, index=False)
         writer.save()
