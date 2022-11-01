@@ -1048,7 +1048,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             roiNode.GetNthControlPointPosition(fidIndex, coords)
 
         # 3x3 orientation matrix of the ROI representation.
-        orientationMatrix = list(roiNode.GetNthControlPointOrientationMatrix(9))
+        orientationMatrix = list(roiNode.GetNthControlPointOrientationMatrix(0))
 
         # The size/axis-aligned edge lengths of the ROI.
         roiSize = list(roiNode.GetSize())
