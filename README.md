@@ -64,10 +64,12 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/84f007972cc041d6b90c2d965b924c78b76b694a/Images/Compute%20Colocalization.gif" width="600px">
 
-Venn diagram example:
+**Venn diagram example**:
+
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Venn%20diagram%20example.jpg" width="600px">
 
-Spreadsheet example:
+**Spreadsheet example**:
+
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Spreadsheet%20example.png" width="600px">
 
 ## Authors/Contributors:
