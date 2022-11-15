@@ -2,7 +2,7 @@
 ## Overview
 SlicerColoc-Z-Stats is a 3D Slicer extension for computing 3D proteins' colocalization (spatial overlap between different channels) of Z-stack images.
 
-Users can set the volume rendering of the Z-stack input image via customizable thresholds within 3D viewports, select the region of interest (ROI) by the bounding box and generate a Venn diagram that displays colocalization metrics.
+Users can adjust the volume rendering of the Z-stack image via customizable thresholds, select the region of interest (ROI) by the bounding box and generate a Venn diagram and a spreadsheet， which displays/saves the colocalization metrics.
 
 The license for this extension is [MIT](https://github.com/benoukraflab/SlicerColoc-Z-Stats/blob/main/LICENSE)
 
@@ -26,8 +26,8 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 * Adjust the ROI bounding box to any position.
 * Click the 'Re-center ROI' button to reposition the image region within the ROI bounding box to the scene's center.
 * Adjust the slider under each channel to any position. The threshold of each channel can be changed synchronously with the sliding of the slider, which can be observed in the 3D view.
-* Click the 'Compute Colocalization' button and wait about a minute to get a Venn diagram which displays the image's colocalization percentage within the current ROI. The Venn diagram will be saved under the installation folder of version 5.0.3.(for example, C:\Users\Public\AppData\Local\NA-MIC\Slicer 5.0.3).
-* Click the 'SAVE' button to save the scene and the information of the UI/Annotation to a 'mrml' file for reloading.
+* Click the 'Compute Colocalization' button and wait seconds to get a Venn diagram and a spreadsheet, which displays the image's colocalization metrics within the current ROI. The Venn diagram and the spreadsheet are saved in the default scene location of slicer version 5.0.3. (The default scene location can be found under the 'Edit/Application Settings' option within 3D Slicer. It can also be read/written from Python as *slicer.app.defaultScenePath*. It can also be changed, but note that the default scene location should be a folder with read and write permissions).
+* Click the 'SAVE' button to save the scene and the information of the UI to a 'mrml' file for reloading.
 * [Download links to sample image](https://drive.google.com/file/d/1IYlggsikgtQR7jXE83sSS2ZtMCuswsA0/view?usp=sharing)
 
 ## Panels and their use
@@ -60,10 +60,15 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Annotations.gif" width="600px">
 
 
-* **Compute Colocalization**: Compute the image's colocalization percentage within the current ROI, draw a Venn diagram to show the percentage, and generate a spreadsheet that contains the names of all selected channels, all corresponding threshold ranges, the image's colocalization percentage within the ROI, and the ROI information (Center, Orientation, Size).
+* **Compute Colocalization**: Compute the image's colocalization metrics within the current ROI box, draw a Venn diagram to show the voxel percentage, and generate a spreadsheet that contains the names of all selected channels, all corresponding threshold ranges, the colocalization metrics, and the information of the ROI box (Center, Orientation, Size).
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/84f007972cc041d6b90c2d965b924c78b76b694a/Images/Compute%20Colocalization.gif" width="600px">
 
+Venn diagram example:
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Venn%20diagram%20example.jpg" width="600px">
+
+Spreadsheet example:
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Spreadsheet%20example.png" width="600px">
 
 ## Authors/Contributors:
 * **Xiang Chen** - [Xiang Chen](https://github.com/ChenXiang96).
