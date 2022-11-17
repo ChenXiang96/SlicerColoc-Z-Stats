@@ -67,7 +67,7 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 
 **Venn diagram example**:
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Venn%20diagram%20example.jpg" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Venn%20diagram%20example.png" width="600px">
 
 **Spreadsheet example**:
 
