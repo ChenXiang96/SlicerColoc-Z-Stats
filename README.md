@@ -71,7 +71,7 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 
 **Spreadsheet example**:
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Spreadsheet%20example.png" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Spreadsheet%20example.gif" width="600px">
 
 ## Authors/Contributors:
 * **Xiang Chen** - [Xiang Chen](https://github.com/ChenXiang96).
