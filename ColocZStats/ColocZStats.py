@@ -1106,7 +1106,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         original_arrayData_bar_List = list()
         newarrayData_bar_List = list()
         original_workVolumes_for_pearson = list()
-        workVolumes_for_pearson = list()
 
         volumeMM3 = 0
         for index in range(len(volumes)):
@@ -1129,17 +1128,11 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             newarrayData = np.logical_and(arrayData>=lowerThreshold, arrayData<=upperThreshold)
             newarrayData = newarrayData.astype(int)
 
-            b = np.where(arrayData > upperThreshold, 0, arrayData)
-            c = np.where(b < lowerThreshold, 0, b)
-
             original_array = slicer.util.arrayFromVolume(volume)
             original_arrayData_bar = np.average(original_array)
             original_workVolumes_for_pearson.append(original_array)
             original_arrayData_bar_List.append(original_arrayData_bar)
 
-            workVolumes_for_pearson.append(c)
-            newarrayData_bar = np.average(c)
-            newarrayData_bar_List.append(newarrayData_bar)
             newvolumeMM3 = np.sum(newarrayData)
             workVolumes.append(newarrayData)
             volumeCM3 = Decimal(str(newvolumeMM3))
@@ -1165,11 +1158,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             Pearson_coefficient_whole = format(float(Pearson_coefficient_whole), '.4f')
 
 
-            Pearson_coefficient = np.sum((workVolumes_for_pearson[0] - newarrayData_bar_List[0]) * (workVolumes_for_pearson[1] - newarrayData_bar_List[1])) / (np.sqrt(np.sum((workVolumes_for_pearson[0] - newarrayData_bar_List[0]) ** 2)) * (np.sqrt(np.sum((workVolumes_for_pearson[1] - newarrayData_bar_List[1]) ** 2))))
-
-
-            Pearson_coefficient = format(float(Pearson_coefficient), '.4f')
-
             if imageName in selectedChannelLabel1:
                 ChannelLabel1_in_csv  = selectedChannelLabel1
             else:
@@ -1180,7 +1168,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             else:
                 ChannelLabel2_in_csv = imageName + "_" + selectedChannelLabel2
 
-            self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeCM3, lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName, Pearson_coefficient_whole,Pearson_coefficient)
+            self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeCM3, lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName, Pearson_coefficient_whole)
             return
 
         twoChannelsIntersectionVolumes = list()
@@ -1218,25 +1206,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         Pearson_coefficient_whole_2_3 = format(float(Pearson_coefficient_whole_2_3), '.4f')
 
-        Pearson_coefficient_1_2 = np.sum((workVolumes_for_pearson[0] - newarrayData_bar_List[0]) * (
-                    workVolumes_for_pearson[1] - newarrayData_bar_List[1])) / (np.sqrt(
-            np.sum((workVolumes_for_pearson[0] - newarrayData_bar_List[0]) ** 2)) * (np.sqrt(
-            np.sum((workVolumes_for_pearson[1] - newarrayData_bar_List[1]) ** 2))))
-
-        Pearson_coefficient_1_2 = format(float(Pearson_coefficient_1_2), '.4f')
-
-        Pearson_coefficient_1_3 = np.sum((workVolumes_for_pearson[0] - newarrayData_bar_List[0]) * (
-                    workVolumes_for_pearson[2] - newarrayData_bar_List[2])) / (np.sqrt(
-            np.sum((workVolumes_for_pearson[0] - newarrayData_bar_List[0]) ** 2)) * (np.sqrt(
-            np.sum((workVolumes_for_pearson[2] - newarrayData_bar_List[2]) ** 2))))
-        Pearson_coefficient_1_3 = format(float(Pearson_coefficient_1_3), '.4f')
-
-        Pearson_coefficient_2_3 = np.sum((workVolumes_for_pearson[1] - newarrayData_bar_List[1]) * (
-                    workVolumes_for_pearson[2] - newarrayData_bar_List[2])) / (np.sqrt(
-            np.sum((workVolumes_for_pearson[1] - newarrayData_bar_List[1]) ** 2)) * (np.sqrt(
-            np.sum((workVolumes_for_pearson[2] - newarrayData_bar_List[2]) ** 2))))
-        Pearson_coefficient_2_3 = format(float(Pearson_coefficient_2_3), '.4f')
-
         selectedChannelLabel1 = ChannelLabels[0]
         selectedChannelLabel2 = ChannelLabels[1]
         selectedChannelLabel3 = ChannelLabels[2]
@@ -1260,10 +1229,9 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                                       lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1,
                                       selectedChannelLabel2, selectedChannelLabel3, ChannelLabel1_in_csv,
                                       ChannelLabel2_in_csv, ChannelLabel3_in_csv, imageName, coords, roiSize,
-                                      orientationMatrix, jsonFileName, Pearson_coefficient_whole_1_2, Pearson_coefficient_whole_1_3,
-                                      Pearson_coefficient_whole_2_3, Pearson_coefficient_1_2, Pearson_coefficient_1_3, Pearson_coefficient_2_3)
+                                      orientationMatrix, jsonFileName, Pearson_coefficient_whole_1_2, Pearson_coefficient_whole_1_3, Pearson_coefficient_whole_2_3)
 
-    def drawVennForTwoChannels(self, widget, singleChannelVolumes, intersectionVolume,lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName,Pearson_coefficient_whole,Pearson_coefficient):
+    def drawVennForTwoChannels(self, widget, singleChannelVolumes, intersectionVolume,lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName,Pearson_coefficient_whole):
         """
         Draw a Venn diagram showing the colocalization percentage when only two channels are selected.
         """
@@ -1284,10 +1252,10 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             intersection_coefficient = format(float((intersectionVolume / totalVolumeOfTwoChannels) * Decimal('1.0000')), '.4f')
 
             if singleChannelVolumes[0] == Decimal('0.0000'):
-                i1 = 'nan'
+                i1 = '0'
 
             elif singleChannelVolumes[1] == Decimal('0.0000'):
-                i2 = 'nan'
+                i2 = '0'
 
             else:
                 i1 = format(float((intersectionVolume / singleChannelVolumes[0]) * Decimal('1.0000')), '.4f')
@@ -1339,10 +1307,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         plt.title("Voxel Percentage(%)\n" + imageName, fontsize=18)
 
         Rp = u'r\u209A'
-        Rop =u'r\u2092\u209A'
         plt.text(0.7, 0.3, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '-' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '-' + str(upperThresholdList[1]) + '\n', fontsize=6)
-        plt.text(0.7, 0.2, 'Pearson\'s Coefficient: \n' + Rp + '= ' + str(Pearson_coefficient_whole) + '\n',fontsize=6)
-        plt.text(0.7, 0, 'Thresholded image within ROI box: \nObject Pearson\'s coefficient: \n' + Rop + '= ' + str(Pearson_coefficient) + '\n', fontsize=6)
+        plt.text(0.7, 0.2, 'Pearson\'s Coefficient for the Origin Channels: \n' + Rp + '= ' + str(Pearson_coefficient_whole) + '\n',fontsize=6)
 
         vennImagename = imageName + ' Venn diagram.jpg'
         vennImagefileLocation = slicer.app.defaultScenePath + "/" + vennImagename
@@ -1365,11 +1331,9 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         volume_pearson_column_1   = [ChannelLabel1_in_csv + " and " + ChannelLabel2_in_csv]
         volume_pearson_column_2  = [str(Pearson_coefficient_whole)]
-        volume_pearson_column_3  = [str(Pearson_coefficient)]
 
         image_pearson = {'Channels': volume_pearson_column_1,
-                         'Pearson\'s Coefficient (' + Rp + ')': volume_pearson_column_2,
-                         'Object Pearson\'s Coefficient (' + Rop + ')': volume_pearson_column_3}
+                         'Pearson\'s Coefficient for the Origin Channels (' + Rp + ')': volume_pearson_column_2}
 
         volume_intersection_column_2 = [str(intersection_coefficient)]
         volume_intersection_column_3 = [str(i1)]
@@ -1408,8 +1372,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                                  lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1,
                                  selectedChannelLabel2, selectedChannelLabel3, ChannelLabel1_in_csv,
                                  ChannelLabel2_in_csv, ChannelLabel3_in_csv, imageName, coords, roiSize,
-                                 orientationMatrix, jsonFileName, Pearson_coefficient_whole_1_2, Pearson_coefficient_whole_1_3,
-                                 Pearson_coefficient_whole_2_3, Pearson_coefficient_1_2, Pearson_coefficient_1_3, Pearson_coefficient_2_3):
+                                 orientationMatrix, jsonFileName, Pearson_coefficient_whole_1_2, Pearson_coefficient_whole_1_3, Pearson_coefficient_whole_2_3):
         """
         Draw a Venn diagram showing the colocalization percentage when three channels are selected.
         """
@@ -1440,11 +1403,11 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             intersection_coefficient = format(float((intersection_1_2_3 / totalVolumeOfThreeChannels) * Decimal('1.0000')), '.4f')
 
             if singleChannelVolumes[0] == Decimal('0.0000'):
-                i1 = 'nan'
+                i1 = '0'
             elif singleChannelVolumes[1] == Decimal('0.0000'):
-                i2 = 'nan'
+                i2 = '0'
             elif singleChannelVolumes[2] == Decimal('0.0000'):
-                i3 = 'nan'
+                i3 = '0'
             else:
                 i1 = format(float((intersection_1_2_3 / singleChannelVolumes[0]) * Decimal('1.0000')), '.4f')
 
@@ -1516,16 +1479,11 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
 
         Rp = u'r\u209A'
-        Rop =u'r\u2092\u209A'
         plt.text(0.7, 0.35, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '-' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '-' + str(upperThresholdList[1]) + '\n' + 'Threshold Range for ' + selectedChannelLabel3 + ': '+str(lowerThresholdList[2]) + '-' + str(upperThresholdList[2]) + '\n', fontsize=6)
 
-        plt.text(0.7, 0, 'Pearson\'s Coefficient: \n' + 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel2 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_whole_1_2) + '\n' + '\n' +
+        plt.text(0.7, 0, 'Pearson\'s Coefficient for the Origin Channels: \n' + 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel2 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_whole_1_2) + '\n' + '\n' +
                  'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel3 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_whole_1_3) + '\n' + '\n' +
                  'For ' + selectedChannelLabel2 + ' and ' + selectedChannelLabel3 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_whole_2_3) + '\n',fontsize=6)
-
-        plt.text(0.7, -0.35, 'Thresholded image within ROI box: \nObject Pearson\'s coefficient: \n' + 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel2 + ':' + '\n' + Rop + '= ' + str(Pearson_coefficient_1_2) + '\n' + '\n' +
-                 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel3 + ':' + '\n' + Rop + '= ' + str(Pearson_coefficient_1_3) + '\n' + '\n' +
-                 'For ' + selectedChannelLabel2 + ' and ' + selectedChannelLabel3 + ':' + '\n' + Rop + '= ' + str(Pearson_coefficient_2_3) + '\n', fontsize=6)
 
         vennImagename = imageName + ' Venn diagram.jpg'
         vennImagefileLocation = slicer.app.defaultScenePath + "/" + vennImagename
@@ -1554,9 +1512,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         volume_pearson_column_1 = [ChannelLabel1_in_csv + " and " + ChannelLabel2_in_csv, ChannelLabel1_in_csv + " and " + ChannelLabel3_in_csv, ChannelLabel2_in_csv + " and " + ChannelLabel3_in_csv]
         volume_pearson_column_2 = [str(Pearson_coefficient_whole_1_2), str(Pearson_coefficient_whole_1_3), str(Pearson_coefficient_whole_2_3)]
-        volume_pearson_column_3 = [str(Pearson_coefficient_1_2), str(Pearson_coefficient_1_3), str(Pearson_coefficient_2_3)]
 
-        image_pearson = {'Channels': volume_pearson_column_1, 'Pearson\'s Coefficient (' + Rp + ')': volume_pearson_column_2, 'Object Pearson\'s Coefficient (' + Rop + ')': volume_pearson_column_3}
+        image_pearson = {'Channels': volume_pearson_column_1, 'Pearson\'s Coefficient for the Origin Channels (' + Rp + ')': volume_pearson_column_2}
 
         volume_intersection_column_2 = [str(intersection_coefficient)]
         volume_intersection_column_3 = [str(i1)]
