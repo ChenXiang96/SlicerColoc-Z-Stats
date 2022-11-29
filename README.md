@@ -41,6 +41,7 @@ A voxel in the ROI box can be considered to have some interesting signal once it
 For the case of any two selected channels:
 The intersection contribution of a given voxel can be defined as the product of the two channels.
 The intersection coefficient is:
+
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Intersection%20for%20two%20channels.png" width="600px">
 
 The numerator: the total number of intersecting voxels between the two channels. 
@@ -56,6 +57,9 @@ The intersection coefficient can also be split into two separate coefficients (T
 For the case of any three selected channels:
 The intersection contribution of a given voxel can be defined as the product of the three channels.
 The intersection coefficient is:
+
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Intersection%20for%20three%20channels.png" width="600px">
+
 
 
 ## Panels and their use
