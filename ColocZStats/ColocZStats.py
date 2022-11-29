@@ -578,7 +578,7 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                     thresholdSlider = slicer.qMRMLVolumeThresholdWidget()
                     thresholdSlider.objectName = name + "_threshold"
                     thresholdSlider.setMRMLVolumeNode(channelVolumes[channelIndex])
-                    thresholdSlider.lowerThreshold = max(lowerThreshold, 1)
+                    thresholdSlider.lowerThreshold = lowerThreshold
                     thresholdSlider.upperThreshold = upperThreshold
                     self.connectThresholdChangeSlot(thresholdSlider, channelVolumes[channelIndex])
                     layout.addItem(subHorizontallayout)
@@ -618,7 +618,7 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                     upperThresholdParameterName = "UpperThreshold" + str(index) + "_" + str(channelIndex)
                     upperThreshold = int(float(self._parameterNode.GetParameter(upperThresholdParameterName)))
                     thresholdSlider = thresholdSliders[channelIndex]
-                    thresholdSlider.lowerThreshold = max(lowerThreshold, 1)
+                    thresholdSlider.lowerThreshold = lowerThreshold
                     thresholdSlider.upperThreshold = upperThreshold
                 annotationTextNode = self.annotationDict[filepath]
                 annotationTextNode.SetText(annotationText)
@@ -764,9 +764,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         ScriptedLoadableModuleLogic.__init__(self)
 
     def updateThresholdOnVolume(self, volNode, lower, upper, widget, thresholdSlider):
-        if lower < 1:
-            lower = 1
-            thresholdSlider.lowerThreshold = 1
         displayNode = volNode.GetDisplayNode()
         displayNode.SetThreshold(lower, upper)
         displayNode.SetApplyThreshold(True)
@@ -953,6 +950,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         threshold = slicer.qMRMLVolumeThresholdWidget()
         threshold.objectName = name + "_threshold"
         threshold.setMRMLVolumeNode(scalarVolumeNode)
+        threshold.lowerThreshold = max(0, threshold.lowerThreshold)
         threshold.connect('thresholdValuesChanged(double, double)', lambda lower, upper: self.updateThresholdOnVolume(scalarVolumeNode, lower, upper, widget,threshold))
         layout.addItem(subHorizontallayout)
         layout.addWidget(threshold)
@@ -1388,7 +1386,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         roiSize_str = "[" + str(roiSize[0]) + ", " + str(roiSize[1]) + ", " + str(roiSize[2]) + "]"
 
         threshold_Range_column_1 = [ChannelLabel1_in_csv , ChannelLabel2_in_csv]
-        threshold_Range_column_2 = [str(lowerThresholdList[0]) + '-' + str(upperThresholdList[0]), str(lowerThresholdList[1]) + '-' + str(upperThresholdList[1])]
+        threshold_Range_column_2 = [str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]), str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1])]
         threshold_Range = {'Channels': threshold_Range_column_1, 'Threshold range': threshold_Range_column_2}
 
         volume_pearson_column_1   = [ChannelLabel1_in_csv + " and " + ChannelLabel2_in_csv]
@@ -1657,9 +1655,9 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         roiSize_str = "[" + str(roiSize[0]) + ", " + str(roiSize[1]) + ", " + str(roiSize[2]) + "]"
 
         threshold_Range_column_1 = [ChannelLabel1_in_csv, ChannelLabel2_in_csv, ChannelLabel3_in_csv]
-        threshold_Range_column_2 = [str(lowerThresholdList[0]) + '-' + str(upperThresholdList[0]),
-                                    str(lowerThresholdList[1]) + '-' + str(upperThresholdList[1]),
-                                    str(lowerThresholdList[2]) + '-' + str(upperThresholdList[2])]
+        threshold_Range_column_2 = [str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]),
+                                    str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]),
+                                    str(lowerThresholdList[2]) + '~' + str(upperThresholdList[2])]
 
         threshold_Range = {'Channels': threshold_Range_column_1, 'Threshold range': threshold_Range_column_2}
 
