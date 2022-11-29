@@ -109,7 +109,7 @@ When any three channels are selected, the intersection coefficient can also be s
 
 **Venn diagram example**:
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Venn%20diagram%20example.png" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Venn%20example.png" width="600px">
 
 **Intensity scatterplot example**:
 
