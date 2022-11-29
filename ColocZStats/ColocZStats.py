@@ -36,7 +36,7 @@ try:
 except ModuleNotFoundError:
     slicer.util.pip_install("warnings")
     import warnings
-warnings.filterwarnings("ignore", category=RuntimeWarning)
+warnings.filterwarnings('ignore')
 
 import sys
 
@@ -49,12 +49,18 @@ except ModuleNotFoundError:
     slicer.util.pip_install("tifffile")
     import tifffile
 
+
 try:
     from skimage import morphology
 except ModuleNotFoundError:
     slicer.util.pip_install("scikit-image")
     from skimage import morphology
 
+try:
+    import selenium
+except ModuleNotFoundError:
+    slicer.util.pip_install("selenium")
+    import selenium
 
 try:
     import holoviews as hv
@@ -62,6 +68,7 @@ except ModuleNotFoundError:
     slicer.util.pip_install("holoviews")
     import holoviews as hv
 hv.extension('bokeh')
+
 
 try:
     import matplotlib_venn
