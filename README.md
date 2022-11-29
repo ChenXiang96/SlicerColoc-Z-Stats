@@ -30,6 +30,11 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 * Click the 'SAVE' button to save the scene and the information of the UI to a 'mrml' file for reloading.
 * [Download links to sample image](https://drive.google.com/file/d/1IYlggsikgtQR7jXE83sSS2ZtMCuswsA0/view?usp=sharing)
 
+## Coefficients
+* **Pearson's colocalization coefficient**:
+Pearson's linear correlation coefficient can be used to measure the overlap of the pixels. It is defined as follows:
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Pearson's%20Coefficient.png" width="600px">
+
 ## Panels and their use
 * **Volume**: Select the current volume to render and operate. 
 * **Display ROI**: Show/hide the ROI bounding box of the current volume. Note that after the image is loaded, the ROI box created by clicking the "Display ROI" button for the first time does not actually totaly fit with the entire image, but the ROI box can still be customized and dragged to any location. If you want to select the entire image for calculation, please make sure to drag the ROI box to any position that can completely contain the entire image.
