@@ -38,7 +38,7 @@ Pearson's linear correlation coefficient can be used to measure the overlap of t
 * **Intersection coefficient**:
 A voxel in the ROI box can be considered to have some interesting signal once its value is between a certain threshold intensity range. In such a case its value could be accounted for as 1, independent of its actual intensity, and otherwise it could be accounted for as 0, and similarly for the other selected channels.
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Intersection%20weight.png" width="600px">
-For the case of two selected channels:
+For the case of any two selected channels:
 The intersection contribution of a given voxel can be defined as the product of the two channels.
 The intersection coefficient is:
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Intersection%20for%20two%20channels.png" width="600px">
@@ -47,7 +47,14 @@ The numerator: the total number of intersecting voxels between the two channels.
 
 The denominator: the total number of voxels of both channels together, which is calculated as the total voxels’ number of the first selected channel plus the total voxels’ number of the second selected channel minus voxels’ number of the intersection (to avoid accounting for it twice).
 
+The intersection coefficient can also be split into two separate coefficients (To report what portion of the first and second channels are intersecting):
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i1%20for%20two%20channels.png" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i2%20for%20two%20channels.png" width="600px">
 
+For the case of any three selected channels:
+The intersection contribution of a given voxel can be defined as the product of the three channels.
+The intersection coefficient is:
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Intersection%20for%20three%20channels.png" width="600px">
 
 ## Panels and their use
 * **Volume**: Select the current volume to render and operate. 
