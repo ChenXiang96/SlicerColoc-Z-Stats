@@ -103,13 +103,17 @@ When any three channels are selected, the intersection coefficient can also be s
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Annotations.gif" width="600px">
 
 
-* **Compute Colocalization**: Compute the image's colocalization metrics within the current ROI box, draw a Venn diagram to show the voxel percentage, and generate a spreadsheet that contains the names of all selected channels, all corresponding threshold ranges, the colocalization metrics, and the information of the ROI box (Center, Orientation, Size).
+* **Compute Colocalization**: Compute the image's colocalization metrics within the current ROI box, draw a Venn diagram to show the voxel percentage, Intensity Scatterplots corresponding to the selected channels, and generate a spreadsheet that contains the names of all selected channels, all corresponding threshold ranges, the colocalization metrics, and the information of the ROI box (Center, Orientation, Size).
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Compute-%20Colocalization.gif" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Compute%20Colocalization.gif" width="600px">
 
 **Venn diagram example**:
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Venn%20diagram%20example.png" width="600px">
+
+**Intensity scatterplot example**:
+
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Scatter%20Plot%20example.png" width="600px">
 
 **Spreadsheet example**:
 
