@@ -950,7 +950,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         threshold = slicer.qMRMLVolumeThresholdWidget()
         threshold.objectName = name + "_threshold"
         threshold.setMRMLVolumeNode(scalarVolumeNode)
-        threshold.lowerThreshold = max(0, threshold.lowerThreshold)
+        threshold.lowerThreshold = threshold.lowerThreshold
+        threshold.upperThreshold = threshold.upperThreshold
         threshold.connect('thresholdValuesChanged(double, double)', lambda lower, upper: self.updateThresholdOnVolume(scalarVolumeNode, lower, upper, widget,threshold))
         layout.addItem(subHorizontallayout)
         layout.addWidget(threshold)
