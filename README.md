@@ -48,7 +48,9 @@ The numerator: the total number of intersecting voxels between the two channels.
 The denominator: the total number of voxels of both channels together, which is calculated as the total voxels’ number of the first selected channel plus the total voxels’ number of the second selected channel minus voxels’ number of the intersection (to avoid accounting for it twice).
 
 The intersection coefficient can also be split into two separate coefficients (To report what portion of the first and second channels are intersecting):
+
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i1%20%20for%20two%20selected%20channels.png" width="600px">
+
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i2%20%20for%20%20two%20selected%20channels.png" width="600px">
 
 For the case of any three selected channels:
