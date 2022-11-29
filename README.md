@@ -60,6 +60,16 @@ The intersection coefficient is:
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Intersection%20for%20three%20channels.png" width="900px">
 
+The numerator: the total number of intersecting voxels among three channels. 
+
+The denominator: the total voxels’ number of the three selected channels together.
+When any three channels are selected, the intersection coefficient can also be split into three separate coefficients (To report what portion of the three channels are intersecting):
+
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i1%20%20for%20%20three%20selected%20channels.png" width="600px">
+
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i2%20%20for%20%20three%20selected%20channels.png" width="600px">
+
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i3%20%20for%20%20three%20selected%20channels.png" width="600px">
 
 
 ## Panels and their use
