@@ -50,9 +50,18 @@ except ModuleNotFoundError:
     import tifffile
 
 try:
-    import skimage
+    from skimage import morphology
 except ModuleNotFoundError:
     slicer.util.pip_install("scikit-image")
+    from skimage import morphology
+
+
+try:
+    import holoviews as hv
+except ModuleNotFoundError:
+    slicer.util.pip_install("holoviews")
+    import holoviews as hv
+hv.extension('bokeh')
 
 try:
     import matplotlib_venn
@@ -944,7 +953,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         threshold = slicer.qMRMLVolumeThresholdWidget()
         threshold.objectName = name + "_threshold"
         threshold.setMRMLVolumeNode(scalarVolumeNode)
-        threshold.lowerThreshold = max(1, threshold.lowerThreshold)
         threshold.connect('thresholdValuesChanged(double, double)', lambda lower, upper: self.updateThresholdOnVolume(scalarVolumeNode, lower, upper, widget,threshold))
         layout.addItem(subHorizontallayout)
         layout.addWidget(threshold)
@@ -1103,9 +1111,10 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         singleChannelVolumes = list()
         lowerThresholdList = list()
         upperThresholdList = list()
-        original_arrayData_bar_List = list()
-        newarrayData_bar_List = list()
-        original_workVolumes_for_pearson = list()
+        arrayData_upper_thresholded_list = list()
+        thresholded_arrayData_bar_list = list()
+        thresholded_workVolumes_for_pearson = list()
+        channel_for_scatter_list = list()
 
         volumeMM3 = 0
         for index in range(len(volumes)):
@@ -1125,13 +1134,23 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             lowerThresholdList.append(lowerThreshold)
             upperThresholdList.append(upperThreshold)
 
-            newarrayData = np.logical_and(arrayData>=lowerThreshold, arrayData<=upperThreshold)
+
+            # newarrayData is to compute the intersection coefficient and i1-i3
+            newarrayData = np.logical_and(arrayData>lowerThreshold, arrayData<=upperThreshold)
             newarrayData = newarrayData.astype(int)
 
-            original_array = slicer.util.arrayFromVolume(volume)
-            original_arrayData_bar = np.average(original_array)
-            original_workVolumes_for_pearson.append(original_array)
-            original_arrayData_bar_List.append(original_arrayData_bar)
+            # arrayData_upper_thresholded is to compute the pearson coefficient for threshold channels within the ROI box.
+            arrayData_upper_thresholded = np.where(arrayData > upperThreshold,0,arrayData)
+            arrayData_upper_thresholded_list.append(arrayData_upper_thresholded)
+            channel_for_scatter = arrayData_upper_thresholded > lowerThreshold
+            channel_for_scatter_list.append(channel_for_scatter)
+
+            arrayData_lower_thresholded = np.where(arrayData_upper_thresholded < lowerThreshold,0,arrayData_upper_thresholded)
+            arrayData_final_thresholded = np.where(arrayData_lower_thresholded >= lowerThreshold,arrayData_lower_thresholded-lowerThreshold,arrayData_lower_thresholded)
+
+            thresholded_arrayData_bar = np.average(arrayData_final_thresholded)
+            thresholded_arrayData_bar_list.append(thresholded_arrayData_bar)
+            thresholded_workVolumes_for_pearson.append(arrayData_final_thresholded)
 
             newvolumeMM3 = np.sum(newarrayData)
             workVolumes.append(newarrayData)
@@ -1151,11 +1170,9 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             selectedChannelLabel1 = ChannelLabels[0]
             selectedChannelLabel2 = ChannelLabels[1]
 
-            Pearson_coefficient_whole = np.sum((original_workVolumes_for_pearson[0] - original_arrayData_bar_List[0]) * (
-                        original_workVolumes_for_pearson[1] - original_arrayData_bar_List[1])) / (np.sqrt(
-                np.sum((original_workVolumes_for_pearson[0] - original_arrayData_bar_List[0]) ** 2)) * (np.sqrt(
-                np.sum((original_workVolumes_for_pearson[1] - original_arrayData_bar_List[1]) ** 2))))
-            Pearson_coefficient_whole = format(float(Pearson_coefficient_whole), '.4f')
+            # Compute the pearson coefficient.
+            Pearson_coefficient = np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])*(thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1]))/(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])**2))*(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1])**2))))
+            Pearson_coefficient = format(float(Pearson_coefficient), '.4f')
 
 
             if imageName in selectedChannelLabel1:
@@ -1168,7 +1185,15 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             else:
                 ChannelLabel2_in_csv = imageName + "_" + selectedChannelLabel2
 
-            self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeCM3, lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName, Pearson_coefficient_whole)
+            # Define the ROI for drawing the scatter plot.
+            roi_for_scatter = (channel_for_scatter_list[0] | channel_for_scatter_list[1])
+            roi_for_scatter = morphology.remove_small_objects(roi_for_scatter, min_size=9)
+            channel1_in_scatter = arrayData_upper_thresholded_list[0][roi_for_scatter]
+            channel2_in_scatter = arrayData_upper_thresholded_list[1][roi_for_scatter]
+
+            # Draw the Venn diagram and produce a spreadsheet.
+            self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeCM3, lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName, Pearson_coefficient, channel1_in_scatter, channel2_in_scatter)
+
             return
 
         twoChannelsIntersectionVolumes = list()
@@ -1183,28 +1208,16 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         volumeMM3 = np.sum(workVolumes[0] * workVolumes[1] * workVolumes[2])
         volumeCM3 = Decimal(str(volumeMM3))
 
-        Pearson_coefficient_whole_1_2 = np.sum((original_workVolumes_for_pearson[0] - original_arrayData_bar_List[0]) * (
-                original_workVolumes_for_pearson[1] - original_arrayData_bar_List[1])) / (np.sqrt(
-            np.sum((original_workVolumes_for_pearson[0] - original_arrayData_bar_List[0]) ** 2)) * (np.sqrt(
-            np.sum((original_workVolumes_for_pearson[1] - original_arrayData_bar_List[1]) ** 2))))
 
-        Pearson_coefficient_whole_1_2 = format(float(Pearson_coefficient_whole_1_2), '.4f')
+        Pearson_coefficient_1_2 = np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])*(thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1]))/(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])**2))*(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1])**2))))
+        Pearson_coefficient_1_2 = format(float(Pearson_coefficient_1_2), '.4f')
 
-        Pearson_coefficient_whole_1_3 = np.sum(
-            (original_workVolumes_for_pearson[0] - original_arrayData_bar_List[0]) * (
-                    original_workVolumes_for_pearson[2] - original_arrayData_bar_List[2])) / (np.sqrt(
-            np.sum((original_workVolumes_for_pearson[0] - original_arrayData_bar_List[0]) ** 2)) * (np.sqrt(
-            np.sum((original_workVolumes_for_pearson[2] - original_arrayData_bar_List[2]) ** 2))))
+        Pearson_coefficient_1_3 = np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])*(thresholded_workVolumes_for_pearson[2] - thresholded_arrayData_bar_list[2]))/(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])**2))*(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[2] - thresholded_arrayData_bar_list[2])**2))))
+        Pearson_coefficient_1_3 = format(float(Pearson_coefficient_1_3), '.4f')
 
-        Pearson_coefficient_whole_1_3 = format(float(Pearson_coefficient_whole_1_3), '.4f')
+        Pearson_coefficient_2_3 = np.sum((thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1])*(thresholded_workVolumes_for_pearson[2] - thresholded_arrayData_bar_list[2]))/(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1])**2))*(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[2] - thresholded_arrayData_bar_list[2])**2))))
+        Pearson_coefficient_2_3 = format(float(Pearson_coefficient_2_3), '.4f')
 
-        Pearson_coefficient_whole_2_3 = np.sum(
-            (original_workVolumes_for_pearson[1] - original_arrayData_bar_List[1]) * (
-                    original_workVolumes_for_pearson[2] - original_arrayData_bar_List[2])) / (np.sqrt(
-            np.sum((original_workVolumes_for_pearson[1] - original_arrayData_bar_List[1]) ** 2)) * (np.sqrt(
-            np.sum((original_workVolumes_for_pearson[2] - original_arrayData_bar_List[2]) ** 2))))
-
-        Pearson_coefficient_whole_2_3 = format(float(Pearson_coefficient_whole_2_3), '.4f')
 
         selectedChannelLabel1 = ChannelLabels[0]
         selectedChannelLabel2 = ChannelLabels[1]
@@ -1225,13 +1238,33 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         else:
             ChannelLabel3_in_csv = imageName + "_" + selectedChannelLabel3
 
+
+        roi_for_scatter_c1_c2 = (channel_for_scatter_list[0] | channel_for_scatter_list[1])
+        roi_for_scatter_c1_c2 = morphology.remove_small_objects(roi_for_scatter_c1_c2, min_size=9)
+        channel1_in_scatter_c1_c2 = arrayData_upper_thresholded_list[0][roi_for_scatter_c1_c2]
+        channel2_in_scatter_c1_c2 = arrayData_upper_thresholded_list[1][roi_for_scatter_c1_c2]
+
+        roi_for_scatter_c1_c3 = (channel_for_scatter_list[0] | channel_for_scatter_list[2])
+        roi_for_scatter_c1_c3 = morphology.remove_small_objects(roi_for_scatter_c1_c3, min_size=9)
+        channel1_in_scatter_c1_c3 = arrayData_upper_thresholded_list[0][roi_for_scatter_c1_c3]
+        channel3_in_scatter_c1_c3 = arrayData_upper_thresholded_list[2][roi_for_scatter_c1_c3]
+
+        roi_for_scatter_c2_c3 = (channel_for_scatter_list[1] | channel_for_scatter_list[2])
+        roi_for_scatter_c2_c3 = morphology.remove_small_objects(roi_for_scatter_c2_c3, min_size=9)
+        channel2_in_scatter_c2_c3 = arrayData_upper_thresholded_list[1][roi_for_scatter_c2_c3]
+        channel3_in_scatter_c2_c3 = arrayData_upper_thresholded_list[2][roi_for_scatter_c2_c3]
+
         self.drawVennForThreeChannels(widget, singleChannelVolumes, twoChannelsIntersectionVolumes, volumeCM3,
                                       lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1,
                                       selectedChannelLabel2, selectedChannelLabel3, ChannelLabel1_in_csv,
                                       ChannelLabel2_in_csv, ChannelLabel3_in_csv, imageName, coords, roiSize,
-                                      orientationMatrix, jsonFileName, Pearson_coefficient_whole_1_2, Pearson_coefficient_whole_1_3, Pearson_coefficient_whole_2_3)
+                                      orientationMatrix, jsonFileName,Pearson_coefficient_1_2, Pearson_coefficient_1_3,
+                                      Pearson_coefficient_2_3, channel1_in_scatter_c1_c2, channel2_in_scatter_c1_c2,
+                                      channel1_in_scatter_c1_c3, channel3_in_scatter_c1_c3, channel2_in_scatter_c2_c3,
+                                      channel3_in_scatter_c2_c3)
 
-    def drawVennForTwoChannels(self, widget, singleChannelVolumes, intersectionVolume,lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName,Pearson_coefficient_whole):
+
+    def drawVennForTwoChannels(self, widget, singleChannelVolumes, intersectionVolume,lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName,Pearson_coefficient, channel1_in_scatter, channel2_in_scatter):
         """
         Draw a Venn diagram showing the colocalization percentage when only two channels are selected.
         """
@@ -1252,10 +1285,10 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             intersection_coefficient = format(float((intersectionVolume / totalVolumeOfTwoChannels) * Decimal('1.0000')), '.4f')
 
             if singleChannelVolumes[0] == Decimal('0.0000'):
-                i1 = '0'
+                i1 = '0.0000'
 
             elif singleChannelVolumes[1] == Decimal('0.0000'):
-                i2 = '0'
+                i2 = '0.0000'
 
             else:
                 i1 = format(float((intersectionVolume / singleChannelVolumes[0]) * Decimal('1.0000')), '.4f')
@@ -1307,8 +1340,9 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         plt.title("Voxel Percentage(%)\n" + imageName, fontsize=18)
 
         Rp = u'r\u209A'
-        plt.text(0.7, 0.3, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '-' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '-' + str(upperThresholdList[1]) + '\n', fontsize=6)
-        plt.text(0.7, 0.2, 'Pearson\'s Coefficient for the Origin Channels: \n' + Rp + '= ' + str(Pearson_coefficient_whole) + '\n',fontsize=6)
+        plt.text(0.7, 0.2, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n', fontsize=6)
+        plt.text(0.7, 0, 'Pearson\'s Coefficient: \n' + Rp + '= ' + str(Pearson_coefficient) + '\n', fontsize=6)
+        plt.text(0.7, -0.2, 'Intersection Coefficient: \n' +'I = ' + str(intersection_coefficient) + '\n' + 'i1 = ' + str(i1) + '\n' + 'i2 = ' + str(i2), fontsize=6)
 
         vennImagename = imageName + ' Venn diagram.jpg'
         vennImagefileLocation = slicer.app.defaultScenePath + "/" + vennImagename
@@ -1320,6 +1354,34 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         widget.imageWidget.setScaledContents(True)
         widget.imageWidget.show()
 
+
+        # Draw the scatter plot for the two selected channels.
+        df_hist = pd.DataFrame({ChannelLabel1_in_csv: channel1_in_scatter.ravel(), ChannelLabel2_in_csv: channel2_in_scatter.ravel()})
+        df_hist = df_hist.groupby(df_hist.columns.tolist()).size().reset_index(name="count")
+        df_hist["log count"] = np.log10(df_hist["count"])
+        hv_fig = hv.Points(
+            data=df_hist, kdims=[ChannelLabel1_in_csv, ChannelLabel2_in_csv], vdims=["log count"]
+        ).opts(
+            cmap="viridis",
+            color="log count",
+            colorbar=True,
+            colorbar_opts={"title": "log₁₀ count"},
+            frame_height=250,
+            frame_width=250,
+            padding=0.02,
+        )
+
+        # Display and save the scatter plot.
+        scatter_plot_png_location = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' +ChannelLabel2_in_csv+ '_Scatter Plot.png'
+        hv.save(hv_fig, scatter_plot_png_location, fmt='png')
+        pm2 = qt.QPixmap(scatter_plot_png_location)
+        widget.imageWidget2 = qt.QLabel()
+        widget.imageWidget2.setPixmap(pm2)
+        widget.imageWidget2.setScaledContents(True)
+        widget.imageWidget2.show()
+        scatter_plot_html_location = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' + ChannelLabel2_in_csv + '_Scatter Plot.html'
+        hv.save(hv_fig, scatter_plot_html_location)
+
         # Create a spreadsheet to save the colocalization and ROI information.
         coords_str = "[" + str(-coords[0]) + ", " + str(-coords[1]) + ", " + str(coords[2]) + "]"
         orientation_str = "[" + str(-orientationMatrix[0]) + ", " + str(-orientationMatrix[1]) + ", " + str(-orientationMatrix[2]) + ", " + str(-orientationMatrix[3]) + ", " + str(-orientationMatrix[4]) + ", " + str(-orientationMatrix[5]) + ", " + str(orientationMatrix[6]) + ", " + str(orientationMatrix[7]) + ", " + str(orientationMatrix[8]) + "]"
@@ -1330,10 +1392,10 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         threshold_Range = {'Channels': threshold_Range_column_1, 'Threshold range': threshold_Range_column_2}
 
         volume_pearson_column_1   = [ChannelLabel1_in_csv + " and " + ChannelLabel2_in_csv]
-        volume_pearson_column_2  = [str(Pearson_coefficient_whole)]
+        volume_pearson_column_2  = [str(Pearson_coefficient)]
 
         image_pearson = {'Channels': volume_pearson_column_1,
-                         'Pearson\'s Coefficient for the Origin Channels (' + Rp + ')': volume_pearson_column_2}
+                         'Pearson\'s Coefficient (' + Rp + ')': volume_pearson_column_2}
 
         volume_intersection_column_2 = [str(intersection_coefficient)]
         volume_intersection_column_3 = [str(i1)]
@@ -1366,13 +1428,18 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         df4.to_excel(writer, sheet_name='ROI Information', header=False, index=False)
         venn_subsheet = writer.book.add_worksheet('Venn Diagram')
         venn_subsheet.insert_image('A1', vennImagefileLocation)
+
+        scatter_subsheet = writer.book.add_worksheet('Scatterplots')
+        scatter_subsheet.insert_image('A1', scatter_plot_png_location)
+
         writer.save()
 
     def drawVennForThreeChannels(self, widget, singleChannelVolumes, twoChannelsIntersectionVolumes, intersection_1_2_3,
-                                 lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1,
-                                 selectedChannelLabel2, selectedChannelLabel3, ChannelLabel1_in_csv,
-                                 ChannelLabel2_in_csv, ChannelLabel3_in_csv, imageName, coords, roiSize,
-                                 orientationMatrix, jsonFileName, Pearson_coefficient_whole_1_2, Pearson_coefficient_whole_1_3, Pearson_coefficient_whole_2_3):
+                                 lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2,
+                                 selectedChannelLabel3, ChannelLabel1_in_csv, ChannelLabel2_in_csv, ChannelLabel3_in_csv,
+                                 imageName, coords, roiSize,orientationMatrix, jsonFileName,Pearson_coefficient_1_2,
+                                 Pearson_coefficient_1_3,Pearson_coefficient_2_3, channel1_in_scatter_c1_c2, channel2_in_scatter_c1_c2,
+                                 channel1_in_scatter_c1_c3, channel3_in_scatter_c1_c3, channel2_in_scatter_c2_c3, channel3_in_scatter_c2_c3):
         """
         Draw a Venn diagram showing the colocalization percentage when three channels are selected.
         """
@@ -1403,11 +1470,11 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             intersection_coefficient = format(float((intersection_1_2_3 / totalVolumeOfThreeChannels) * Decimal('1.0000')), '.4f')
 
             if singleChannelVolumes[0] == Decimal('0.0000'):
-                i1 = '0'
+                i1 = '0.0000'
             elif singleChannelVolumes[1] == Decimal('0.0000'):
-                i2 = '0'
+                i2 = '0.0000'
             elif singleChannelVolumes[2] == Decimal('0.0000'):
-                i3 = '0'
+                i3 = '0.0000'
             else:
                 i1 = format(float((intersection_1_2_3 / singleChannelVolumes[0]) * Decimal('1.0000')), '.4f')
 
@@ -1479,11 +1546,13 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
 
         Rp = u'r\u209A'
-        plt.text(0.7, 0.35, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '-' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '-' + str(upperThresholdList[1]) + '\n' + 'Threshold Range for ' + selectedChannelLabel3 + ': '+str(lowerThresholdList[2]) + '-' + str(upperThresholdList[2]) + '\n', fontsize=6)
+        plt.text(0.7, 0.35, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n' + 'Threshold Range for ' + selectedChannelLabel3 + ': '+str(lowerThresholdList[2]) + '~' + str(upperThresholdList[2]) + '\n', fontsize=6)
 
-        plt.text(0.7, 0, 'Pearson\'s Coefficient for the Origin Channels: \n' + 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel2 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_whole_1_2) + '\n' + '\n' +
-                 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel3 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_whole_1_3) + '\n' + '\n' +
-                 'For ' + selectedChannelLabel2 + ' and ' + selectedChannelLabel3 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_whole_2_3) + '\n',fontsize=6)
+        plt.text(0.7, 0, 'Pearson\'s coefficient: \n' + 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel2 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_1_2) + '\n' + '\n' +
+                 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel3 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_1_3) + '\n' + '\n' +
+                 'For ' + selectedChannelLabel2 + ' and ' + selectedChannelLabel3 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_2_3) + '\n', fontsize=6)
+
+        plt.text(0.7, -0.2, 'Intersection Coefficient: \n' + 'I = ' + str(intersection_coefficient) + '\n' + 'i1 = ' + str(i1) + '\n' + 'i2 = ' + str(i2) + '\n' + 'i3 = ' + str(i3), fontsize=6)
 
         vennImagename = imageName + ' Venn diagram.jpg'
         vennImagefileLocation = slicer.app.defaultScenePath + "/" + vennImagename
@@ -1494,6 +1563,90 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         widget.imageWidget.setPixmap(pm)
         widget.imageWidget.setScaledContents(True)
         widget.imageWidget.show()
+
+
+        # Draw the scatter plot for the first and second selected channels.
+        df_hist_1_2 = pd.DataFrame({ChannelLabel1_in_csv: channel1_in_scatter_c1_c2.ravel(), ChannelLabel2_in_csv: channel2_in_scatter_c1_c2.ravel()})
+        df_hist_1_2 = df_hist_1_2.groupby(df_hist_1_2.columns.tolist()).size().reset_index(name="count")
+        df_hist_1_2["log count"] = np.log10(df_hist_1_2["count"])
+        hv_fig_1_2 = hv.Points(
+            data=df_hist_1_2, kdims=[ChannelLabel1_in_csv, ChannelLabel2_in_csv], vdims=["log count"]
+        ).opts(
+            cmap="viridis",
+            color="log count",
+            colorbar=True,
+            colorbar_opts={"title": "log₁₀ count"},
+            frame_height=250,
+            frame_width=250,
+            padding=0.02,
+        )
+
+        # Display and save the scatter plot.
+        scatter_plot_png_location_1_2 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' +ChannelLabel2_in_csv+ '_Scatter Plot.png'
+        hv.save(hv_fig_1_2, scatter_plot_png_location_1_2, fmt='png')
+        pm2 = qt.QPixmap(scatter_plot_png_location_1_2)
+        widget.imageWidget2 = qt.QLabel()
+        widget.imageWidget2.setPixmap(pm2)
+        widget.imageWidget2.setScaledContents(True)
+        widget.imageWidget2.show()
+        scatter_plot_html_location_1_2 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' + ChannelLabel2_in_csv + '_Scatter Plot.html'
+        hv.save(hv_fig_1_2, scatter_plot_html_location_1_2)
+
+        # Draw the scatter plot for the first and third selected channels.
+        df_hist_1_3 = pd.DataFrame({ChannelLabel1_in_csv: channel1_in_scatter_c1_c3.ravel(), ChannelLabel3_in_csv: channel3_in_scatter_c1_c3.ravel()})
+        df_hist_1_3 = df_hist_1_3.groupby(df_hist_1_3.columns.tolist()).size().reset_index(name="count")
+        df_hist_1_3["log count"] = np.log10(df_hist_1_3["count"])
+        hv_fig_1_3 = hv.Points(
+            data=df_hist_1_3, kdims=[ChannelLabel1_in_csv, ChannelLabel3_in_csv], vdims=["log count"]
+        ).opts(
+            cmap="viridis",
+            color="log count",
+            colorbar=True,
+            colorbar_opts={"title": "log₁₀ count"},
+            frame_height=250,
+            frame_width=250,
+            padding=0.02,
+        )
+
+        # Display and save the scatter plot.
+        scatter_plot_png_location_1_3 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' +ChannelLabel3_in_csv+ '_Scatter Plot.png'
+        hv.save(hv_fig_1_3, scatter_plot_png_location_1_3, fmt='png')
+        pm3 = qt.QPixmap(scatter_plot_png_location_1_3)
+        widget.imageWidget3 = qt.QLabel()
+        widget.imageWidget3.setPixmap(pm3)
+        widget.imageWidget3.setScaledContents(True)
+        widget.imageWidget3.show()
+        scatter_plot_html_location_1_3 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' + ChannelLabel3_in_csv + '_Scatter Plot.html'
+        hv.save(hv_fig_1_3, scatter_plot_html_location_1_3)
+
+
+        # Draw the scatter plot for the second and third selected channels.
+        df_hist_2_3 = pd.DataFrame({ChannelLabel2_in_csv: channel2_in_scatter_c2_c3.ravel(), ChannelLabel3_in_csv: channel3_in_scatter_c2_c3.ravel()})
+        df_hist_2_3 = df_hist_2_3.groupby(df_hist_2_3.columns.tolist()).size().reset_index(name="count")
+        df_hist_2_3["log count"] = np.log10(df_hist_2_3["count"])
+        hv_fig_2_3 = hv.Points(
+            data=df_hist_2_3, kdims=[ChannelLabel2_in_csv, ChannelLabel3_in_csv], vdims=["log count"]
+        ).opts(
+            cmap="viridis",
+            color="log count",
+            colorbar=True,
+            colorbar_opts={"title": "log₁₀ count"},
+            frame_height=250,
+            frame_width=250,
+            padding=0.02,
+        )
+
+        # Display and save the scatter plot.
+        scatter_plot_png_location_2_3 = slicer.app.defaultScenePath + "/" + ChannelLabel2_in_csv + ' and ' +ChannelLabel3_in_csv+ '_Scatter Plot.png'
+        hv.save(hv_fig_2_3, scatter_plot_png_location_2_3, fmt='png')
+        pm4 = qt.QPixmap(scatter_plot_png_location_2_3)
+        widget.imageWidget4 = qt.QLabel()
+        widget.imageWidget4.setPixmap(pm4)
+        widget.imageWidget4.setScaledContents(True)
+        widget.imageWidget4.show()
+        scatter_plot_html_location_2_3 = slicer.app.defaultScenePath + "/" + ChannelLabel2_in_csv + ' and ' + ChannelLabel3_in_csv + '_Scatter Plot.html'
+        hv.save(hv_fig_2_3, scatter_plot_html_location_2_3)
+
 
         # Create a spreadsheet to save the colocalization and ROI information.
         coords_str = "[" + str(-coords[0]) + ", " + str(-coords[1]) + ", " + str(coords[2]) + "]"
@@ -1511,9 +1664,9 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         threshold_Range = {'Channels': threshold_Range_column_1, 'Threshold range': threshold_Range_column_2}
 
         volume_pearson_column_1 = [ChannelLabel1_in_csv + " and " + ChannelLabel2_in_csv, ChannelLabel1_in_csv + " and " + ChannelLabel3_in_csv, ChannelLabel2_in_csv + " and " + ChannelLabel3_in_csv]
-        volume_pearson_column_2 = [str(Pearson_coefficient_whole_1_2), str(Pearson_coefficient_whole_1_3), str(Pearson_coefficient_whole_2_3)]
 
-        image_pearson = {'Channels': volume_pearson_column_1, 'Pearson\'s Coefficient for the Origin Channels (' + Rp + ')': volume_pearson_column_2}
+        volume_pearson_column_2 = [str(Pearson_coefficient_1_2), str(Pearson_coefficient_1_3), str(Pearson_coefficient_2_3)]
+        image_pearson = {'Channels': volume_pearson_column_1, 'Pearson\'s Coefficient (' + Rp + ')': volume_pearson_column_2}
 
         volume_intersection_column_2 = [str(intersection_coefficient)]
         volume_intersection_column_3 = [str(i1)]
@@ -1550,6 +1703,11 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         df4.to_excel(writer, sheet_name='ROI Information', header=False, index=False)
         venn_subsheet = writer.book.add_worksheet('Venn Diagram')
         venn_subsheet.insert_image('A1', vennImagefileLocation)
+        scatter_subsheet = writer.book.add_worksheet('Scatterplots')
+        scatter_subsheet.insert_image('A1', scatter_plot_png_location_1_2)
+        scatter_subsheet.insert_image('I1', scatter_plot_png_location_1_3)
+        scatter_subsheet.insert_image('Q1', scatter_plot_png_location_2_3)
+
         writer.save()
 
 
