@@ -9,7 +9,7 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Screenshots.png" width="800px">
 
 ## Installation
-* The 3D Slicer stable version 5.0.3 is needed to use this module: [version Version 5.0.3](https://download.slicer.org/). Or it can be downloaded from this [link](https://slicer-packages.kitware.com/#collection/5f4474d0e1d8c75dfc70547e/folder/62cc513eaa08d161a31c1372)
+* The 3D Slicer stable version 5.2.1 is needed to use this module: [version Version 5.2.1](https://download.slicer.org/). Or it can be downloaded from this [link](https://slicer-packages.kitware.com/#collection/5f4474d0e1d8c75dfc70547e/folder/637f77c6517443dc5dc7281f)
   * Open “Extensions Manager” using menu: View / Extensions manager. On macOS, Extensions manager requires the [application to be installed](https://slicer.readthedocs.io/en/latest/user_guide/getting_started.html#mac).
   * Go to “Install extensions” tab
   * Go to “Quantification” category
