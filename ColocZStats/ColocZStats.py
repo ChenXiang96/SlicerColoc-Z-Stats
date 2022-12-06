@@ -19,6 +19,14 @@ except ModuleNotFoundError:
     import decimal
 from decimal import Decimal
 
+
+try:
+    import math
+except ModuleNotFoundError:
+    slicer.util.pip_install("python-math")
+    import math
+
+
 try:
     import pandas as pd
 except ModuleNotFoundError:
@@ -878,7 +886,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                         channelVolume = self.createVolumeForChannel(componentImage, colorIds[component], layout, name, widget,channelLabelName)
                         channelVolumeList.append(channelVolume)
                 else:
-                    text = "Image data dimension are incompatible. Expected 4. Got " + str(dimNum)
+                    text = "The number of image data axes is incompatible. Expected 4. Got " + str(dimNum)
                     msg = qt.QMessageBox()
                     msg.setIcon(qt.QMessageBox.Warning)
                     msg.setText(text)
@@ -1178,8 +1186,11 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
             # Compute the pearson coefficient.
             Pearson_coefficient = np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])*(thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1]))/(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])**2))*(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1])**2))))
-            Pearson_coefficient = format(float(Pearson_coefficient), '.4f')
 
+            if math.isnan(Pearson_coefficient):
+                Pearson_coefficient = Decimal('0.0000')
+            else:
+                Pearson_coefficient = format(float(Pearson_coefficient), '.4f')
 
             if imageName in selectedChannelLabel1:
                 ChannelLabel1_in_csv  = selectedChannelLabel1
@@ -1214,15 +1225,26 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         volumeMM3 = np.sum(workVolumes[0] * workVolumes[1] * workVolumes[2])
         volumeCM3 = Decimal(str(volumeMM3))
 
-
         Pearson_coefficient_1_2 = np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])*(thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1]))/(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])**2))*(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1])**2))))
-        Pearson_coefficient_1_2 = format(float(Pearson_coefficient_1_2), '.4f')
+
+        if math.isnan(Pearson_coefficient_1_2):
+            Pearson_coefficient_1_2 = Decimal('0.0000')
+        else:
+            Pearson_coefficient_1_2 = format(float(Pearson_coefficient_1_2), '.4f')
+
 
         Pearson_coefficient_1_3 = np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])*(thresholded_workVolumes_for_pearson[2] - thresholded_arrayData_bar_list[2]))/(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])**2))*(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[2] - thresholded_arrayData_bar_list[2])**2))))
-        Pearson_coefficient_1_3 = format(float(Pearson_coefficient_1_3), '.4f')
+        if math.isnan(Pearson_coefficient_1_3):
+            Pearson_coefficient_1_3 = Decimal('0.0000')
+        else:
+            Pearson_coefficient_1_3 = format(float(Pearson_coefficient_1_3), '.4f')
+
 
         Pearson_coefficient_2_3 = np.sum((thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1])*(thresholded_workVolumes_for_pearson[2] - thresholded_arrayData_bar_list[2]))/(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1])**2))*(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[2] - thresholded_arrayData_bar_list[2])**2))))
-        Pearson_coefficient_2_3 = format(float(Pearson_coefficient_2_3), '.4f')
+        if math.isnan(Pearson_coefficient_2_3):
+            Pearson_coefficient_2_3 = Decimal('0.0000')
+        else:
+            Pearson_coefficient_2_3 = format(float(Pearson_coefficient_2_3), '.4f')
 
 
         selectedChannelLabel1 = ChannelLabels[0]
@@ -1277,48 +1299,46 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         p1 = 0
         p2 = 0
         p3 = 0
-        i1 = 0
-        i2 = 0
         intersection_coefficient = 0
+        i1 = Decimal('0.0000')
+        i2 = Decimal('0.0000')
+
 
         totalVolumeOfTwoChannels = singleChannelVolumes[0] + singleChannelVolumes[1] - intersectionVolume
 
         if float(totalVolumeOfTwoChannels) > 0:
-            result1 = format(float(((singleChannelVolumes[0] - intersectionVolume) / totalVolumeOfTwoChannels) * Decimal('100.0000')), '.4f')  #0
-            result2 = format(float(((singleChannelVolumes[1] - intersectionVolume) / totalVolumeOfTwoChannels) * Decimal('100.0000')), '.4f')  #100
-            result3 = format(float((intersectionVolume / totalVolumeOfTwoChannels) * Decimal('100.0000')), '.4f') #0
+            result1 = format(float(((singleChannelVolumes[0] - intersectionVolume) / totalVolumeOfTwoChannels) * Decimal('100.0000')), '.4f')
+            result2 = format(float(((singleChannelVolumes[1] - intersectionVolume) / totalVolumeOfTwoChannels) * Decimal('100.0000')), '.4f')
+            result3 = format(float((intersectionVolume / totalVolumeOfTwoChannels) * Decimal('100.0000')), '.4f')
 
-            intersection_coefficient = format(float((intersectionVolume / totalVolumeOfTwoChannels) * Decimal('1.0000')), '.4f')
+            result_list_1 = [Decimal(result1), Decimal(result2), Decimal(result3)]
+            result_list_2 = [Decimal(result1), Decimal(result2), Decimal(result3)]
+            result_list_2.remove(max(result_list_2))
+            result_list_2_sum = sum(result_list_2)
+            result_list_1[result_list_1.index(max(result_list_1))] = Decimal('100.0000') - result_list_2_sum
+
+            # Get the specific percentage value corresponding to each part of the Venn diagram.
+            p1 = format(float(result_list_1[0]), '.4f')
+            p2 = format(float(result_list_1[1]), '.4f')
+            p3 = format(float(result_list_1[2]), '.4f')
+
+            sum1 = format(float((result_list_1[0] + result_list_1[2])), '.4f')
+            sum2 = format(float((result_list_1[1] + result_list_1[2])), '.4f')
+
+            intersection_coefficient = format(float(Decimal(p3) * Decimal('0.01')), '.4f')
 
             if singleChannelVolumes[0] == Decimal('0.0000'):
-                i1 = '0.0000'
+                i1 = Decimal('0.0000')
 
             elif singleChannelVolumes[1] == Decimal('0.0000'):
-                i2 = '0.0000'
+                i2 = Decimal('0.0000')
 
             else:
-                i1 = format(float((intersectionVolume / singleChannelVolumes[0]) * Decimal('1.0000')), '.4f')
-                i2 = format(float((intersectionVolume / singleChannelVolumes[1]) * Decimal('1.0000')), '.4f')
+                first_channel_sum = Decimal(p1) + Decimal(p3)
+                second_channel_sum = Decimal(p2) + Decimal(p3)
+                i1 = format(float(Decimal(p3) / first_channel_sum), '.4f')
 
-            result_list = [Decimal(result1), Decimal(result2), Decimal(result3)]
-            if result_list.count(max(result_list)) == 2 and max(result_list) == Decimal('50.0000'):
-                p1 = result1
-                p2 = result2
-                p3 = result3
-            else:
-                result_sum = Decimal('0.0000')
-                for i in result_list:
-                    if i != max(result_list):
-                        result_sum += i
-                result_list[result_list.index(max(result_list))] = Decimal('100.0000') - result_sum
-
-                # Get the specific percentage value corresponding to each part of the Venn diagram.
-                p1 = format(float(result_list[0]), '.4f')
-                p2 = format(float(result_list[1]), '.4f')
-                p3 = format(float(result_list[2]), '.4f')
-
-            sum1 = format(float((result_list[0] + result_list[2])), '.4f')
-            sum2 = format(float((result_list[1] + result_list[2])), '.4f')
+                i2 = format(float(Decimal(p3) / second_channel_sum), '.4f')
 
             print("The threshold range of " + ChannelLabel1_in_csv + " is: " + str(lowerThresholdList[0]) + "-" + str(upperThresholdList[0]))
             print("The threshold range of " + ChannelLabel2_in_csv + " is: " + str(lowerThresholdList[1]) + "-" + str(upperThresholdList[1]))
@@ -1417,21 +1437,23 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         df1 = pd.DataFrame.from_dict(threshold_Range, orient='index')
         df1 = df1.transpose()
 
-        df2 = pd.DataFrame.from_dict(image_pearson, orient='index')
+        df2 = pd.DataFrame.from_dict(ROI_Information, orient='index')
         df2 = df2.transpose()
 
-        df3 = pd.DataFrame.from_dict(image_intersection, orient='index')
+        df3 = pd.DataFrame.from_dict(image_pearson, orient='index')
         df3 = df3.transpose()
 
-        df4 = pd.DataFrame.from_dict(ROI_Information, orient='index')
+        df4 = pd.DataFrame.from_dict(image_intersection, orient='index')
         df4 = df4.transpose()
+
+
 
         excel_out_path = slicer.app.defaultScenePath + "/" + imageName + " Statistics.xlsx"
         writer = pd.ExcelWriter(excel_out_path , engine='xlsxwriter')
         df1.to_excel(writer, sheet_name = 'Threshold Range', index=False)
-        df2.to_excel(writer, sheet_name = 'Pearson\'s Coefficient', index=False)
-        df3.to_excel(writer, sheet_name='Intersection Coefficient', index=False)
-        df4.to_excel(writer, sheet_name='ROI Information', header=False, index=False)
+        df2.to_excel(writer, sheet_name='ROI Information', header=False, index=False)
+        df3.to_excel(writer, sheet_name = 'Pearson\'s Coefficient', index=False)
+        df4.to_excel(writer, sheet_name='Intersection Coefficient', index=False)
         venn_subsheet = writer.book.add_worksheet('Venn Diagram')
         venn_subsheet.insert_image('A1', vennImagefileLocation)
 
@@ -1459,10 +1481,11 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         p5 = 0
         p6 = 0
         p7 = 0
-        i1 = 0
-        i2 = 0
-        i3 = 0
         intersection_coefficient = 0
+        i1 = Decimal('0.0000')
+        i2 = Decimal('0.0000')
+        i3 = Decimal('0.0000')
+
 
         if float(totalVolumeOfThreeChannels) > 0:
             result1 = format(float((((singleChannelVolumes[0] - twoChannelsIntersectionVolumes[0]) - (twoChannelsIntersectionVolumes[2] - intersection_1_2_3)) / totalVolumeOfThreeChannels) * Decimal('100.0000')), '.4f')
@@ -1473,24 +1496,12 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             result6 = format(float(((twoChannelsIntersectionVolumes[1] - intersection_1_2_3) / totalVolumeOfThreeChannels) * Decimal('100.0000')), '.4f')
             result7 = format(float((intersection_1_2_3 / totalVolumeOfThreeChannels) * Decimal('100.0000')), '.4f')
 
-            intersection_coefficient = format(float((intersection_1_2_3 / totalVolumeOfThreeChannels) * Decimal('1.0000')), '.4f')
+            result_list_1 = [Decimal(result1), Decimal(result2), Decimal(result3), Decimal(result4), Decimal(result5), Decimal(result6), Decimal(result7)]
+            result_list_2 = [Decimal(result1), Decimal(result2), Decimal(result3), Decimal(result4), Decimal(result5), Decimal(result6), Decimal(result7)]
+            result_list_2.remove(max(result_list_2))
+            result_list_2_sum = sum(result_list_2)
 
-            if singleChannelVolumes[0] == Decimal('0.0000'):
-                i1 = '0.0000'
-            elif singleChannelVolumes[1] == Decimal('0.0000'):
-                i2 = '0.0000'
-            elif singleChannelVolumes[2] == Decimal('0.0000'):
-                i3 = '0.0000'
-            else:
-                i1 = format(float((intersection_1_2_3 / singleChannelVolumes[0]) * Decimal('1.0000')), '.4f')
-
-                i2 = format(float((intersection_1_2_3 / singleChannelVolumes[1]) * Decimal('1.0000')), '.4f')
-
-                i3 = format(float((intersection_1_2_3 / singleChannelVolumes[2]) * Decimal('1.0000')), '.4f')
-
-            result_list = [Decimal(result1), Decimal(result2), Decimal(result3), Decimal(result4), Decimal(result5), Decimal(result6), Decimal(result7)]
-
-            if result_list.count(max(result_list)) == 3 and max(result_list) == Decimal('33.3333'):
+            if result_list_1.count(max(result_list_1)) == 3 and max(result_list_1) == Decimal('33.3333'):
                 p1 = result1
                 p2 = result2
                 p3 = result3
@@ -1499,27 +1510,42 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                 p6 = result6
                 p7 = result7
             else:
-                result_sum = Decimal('0.0000')
-                for i in result_list:
-                    if i != max(result_list):
-                        result_sum += i
-                result_list[result_list.index(max(result_list))] = Decimal('100.0000') - result_sum
+                result_list_1[result_list_1.index(max(result_list_1))] = Decimal('100.0000') - result_list_2_sum
 
                 # Get the specific percentage value corresponding to each part of the Venn diagram.
-                p1 = format(float(result_list[0]), '.4f')
-                p2 = format(float(result_list[1]), '.4f')
-                p3 = format(float(result_list[2]), '.4f')
-                p4 = format(float(result_list[3]), '.4f')
-                p5 = format(float(result_list[4]), '.4f')
-                p6 = format(float(result_list[5]), '.4f')
-                p7 = format(float(result_list[6]), '.4f')
+                p1 = format(float(result_list_1[0]), '.4f')
+                p2 = format(float(result_list_1[1]), '.4f')
+                p3 = format(float(result_list_1[2]), '.4f')
+                p4 = format(float(result_list_1[3]), '.4f')
+                p5 = format(float(result_list_1[4]), '.4f')
+                p6 = format(float(result_list_1[5]), '.4f')
+                p7 = format(float(result_list_1[6]), '.4f')
 
-            sum1_2 = format(float((result_list[2] + result_list[6])), '.4f')
-            sum1_3 = format(float((result_list[4] + result_list[6])), '.4f')
-            sum2_3 = format(float((result_list[5] + result_list[6])), '.4f')
-            sum1 = format(float((result_list[0] + result_list[4] + result_list[2] + result_list[6])), '.4f')
-            sum2 = format(float((result_list[1] + result_list[5] + result_list[2] + result_list[6])), '.4f')
-            sum3 = format(float((result_list[3] + result_list[4] + result_list[5] + result_list[6])), '.4f')
+            sum1_2 = format(float((result_list_1[2] + result_list_1[6])), '.4f')
+            sum1_3 = format(float((result_list_1[4] + result_list_1[6])), '.4f')
+            sum2_3 = format(float((result_list_1[5] + result_list_1[6])), '.4f')
+            sum1 = format(float((result_list_1[0] + result_list_1[4] + result_list_1[2] + result_list_1[6])), '.4f')
+            sum2 = format(float((result_list_1[1] + result_list_1[5] + result_list_1[2] + result_list_1[6])), '.4f')
+            sum3 = format(float((result_list_1[3] + result_list_1[4] + result_list_1[5] + result_list_1[6])), '.4f')
+
+            intersection_coefficient = format(float(Decimal(p7) * Decimal('0.01')), '.4f')
+
+            if singleChannelVolumes[0] == Decimal('0.0000'):
+                i1 = Decimal('0.0000')
+            elif singleChannelVolumes[1] == Decimal('0.0000'):
+                i2 = Decimal('0.0000')
+            elif singleChannelVolumes[2] == Decimal('0.0000'):
+                i3 = Decimal('0.0000')
+            else:
+                first_channel_sum = Decimal(p1) + Decimal(p3) + Decimal(p5) + Decimal(p7)
+                second_channel_sum = Decimal(p2) + Decimal(p3) + Decimal(p6) + Decimal(p7)
+                third_channel_sum = Decimal(p4) + Decimal(p5) + Decimal(p6) + Decimal(p7)
+
+                i1 = format(float(Decimal(p7) / first_channel_sum), '.4f')
+
+                i2 = format(float(Decimal(p7) / second_channel_sum), '.4f')
+
+                i3 = format(float(Decimal(p7) / third_channel_sum), '.4f')
 
             print("The threshold range of " + ChannelLabel1_in_csv + " is: " + str(lowerThresholdList[0]) + "-" + str(upperThresholdList[0]))
             print("The threshold range of " + ChannelLabel2_in_csv + " is: " + str(lowerThresholdList[1]) + "-" + str(upperThresholdList[1]))
@@ -1554,7 +1580,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         Rp = u'r\u209A'
         plt.text(0.7, 0.35, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n' + 'Threshold Range for ' + selectedChannelLabel3 + ': '+str(lowerThresholdList[2]) + '~' + str(upperThresholdList[2]) + '\n', fontsize=6)
 
-        plt.text(0.7, 0, 'Pearson\'s coefficient: \n' + 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel2 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_1_2) + '\n' + '\n' +
+        plt.text(0.7, 0, 'Pearson\'s Coefficient: \n' + 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel2 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_1_2) + '\n' + '\n' +
                  'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel3 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_1_3) + '\n' + '\n' +
                  'For ' + selectedChannelLabel2 + ' and ' + selectedChannelLabel3 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_2_3) + '\n', fontsize=6)
 
@@ -1692,21 +1718,21 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         df1 = pd.DataFrame.from_dict(threshold_Range, orient='index')
         df1 = df1.transpose()
 
-        df2 = pd.DataFrame.from_dict(image_pearson, orient='index')
+        df2 = pd.DataFrame.from_dict(ROI_Information, orient='index')
         df2 = df2.transpose()
 
-        df3 = pd.DataFrame.from_dict(image_intersection, orient='index')
+        df3 = pd.DataFrame.from_dict(image_pearson, orient='index')
         df3 = df3.transpose()
 
-        df4 = pd.DataFrame.from_dict(ROI_Information, orient='index')
+        df4 = pd.DataFrame.from_dict(image_intersection, orient='index')
         df4 = df4.transpose()
 
         excel_out_path = slicer.app.defaultScenePath + "/" + imageName + " Statistics.xlsx"
         writer = pd.ExcelWriter(excel_out_path, engine='xlsxwriter')
         df1.to_excel(writer, sheet_name='Threshold Range', index=False)
-        df2.to_excel(writer, sheet_name='Pearson\'s Coefficient', index=False)
-        df3.to_excel(writer, sheet_name='Intersection Coefficient', index=False)
-        df4.to_excel(writer, sheet_name='ROI Information', header=False, index=False)
+        df2.to_excel(writer, sheet_name='ROI Information', header=False, index=False)
+        df3.to_excel(writer, sheet_name='Pearson\'s Coefficient', index=False)
+        df4.to_excel(writer, sheet_name='Intersection Coefficient', index=False)
         venn_subsheet = writer.book.add_worksheet('Venn Diagram')
         venn_subsheet.insert_image('A1', vennImagefileLocation)
         scatter_subsheet = writer.book.add_worksheet('Scatterplots')
