@@ -1359,16 +1359,23 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         # Display and save the Venn diagram.
         my_dpi = 200
         plt.figure(figsize=(1000 / my_dpi, 800 / my_dpi), dpi=my_dpi)
-        venn2_unweighted(subsets=[p1, p2, p3], set_labels=[selectedChannelLabel1, selectedChannelLabel2],
+        p1_in_venn = str(p1) + '%'
+        p2_in_venn = str(p2) + '%'
+        p3_in_venn = str(p3) + '%'
+        venn2 = venn2_unweighted(subsets=[p1_in_venn, p2_in_venn, p3_in_venn], set_labels=[selectedChannelLabel1, selectedChannelLabel2],
                          set_colors=(colors[0], colors[1]),
                          alpha=0.6)
 
-        plt.title("Voxel Percentage(%)\n" + imageName, fontsize=18)
+        plt.suptitle(imageName, fontsize=15)
+        plt.title('\n' + 'Voxel Percentage', fontsize=10)
 
         Rp = u'r\u209A'
         plt.text(0.7, 0.2, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n', fontsize=6)
         plt.text(0.7, 0, 'Pearson\'s Coefficient: \n' + Rp + '= ' + str(Pearson_coefficient) + '\n', fontsize=6)
         plt.text(0.7, -0.2, 'Intersection Coefficient: \n' +'I = ' + str(intersection_coefficient) + '\n' + 'i1 = ' + str(i1) + '\n' + 'i2 = ' + str(i2), fontsize=6)
+
+        for text in venn2.subset_labels:
+            text.set_fontsize(8)
 
         vennImagename = imageName + ' Venn diagram.jpg'
         vennImagefileLocation = slicer.app.defaultScenePath + "/" + vennImagename
@@ -1459,7 +1466,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         scatter_subsheet = writer.book.add_worksheet('Scatterplots')
         scatter_subsheet.insert_image('A1', scatter_plot_png_location)
-
         writer.save()
 
     def drawVennForThreeChannels(self, widget, singleChannelVolumes, twoChannelsIntersectionVolumes, intersection_1_2_3,
@@ -1485,7 +1491,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         i1 = Decimal('0.0000')
         i2 = Decimal('0.0000')
         i3 = Decimal('0.0000')
-
 
         if float(totalVolumeOfThreeChannels) > 0:
             result1 = format(float((((singleChannelVolumes[0] - twoChannelsIntersectionVolumes[0]) - (twoChannelsIntersectionVolumes[2] - intersection_1_2_3)) / totalVolumeOfThreeChannels) * Decimal('100.0000')), '.4f')
@@ -1571,11 +1576,19 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         # Create a Venn diagram.
         my_dpi = 200
         plt.figure(figsize=(1200 / my_dpi, 1200 / my_dpi), dpi=my_dpi)
-        venn3_unweighted(subsets=[p1, p2, p3, p4, p5, p6, p7],
+        p1_in_venn = str(p1) + '%'
+        p2_in_venn = str(p2) + '%'
+        p3_in_venn = str(p3) + '%'
+        p4_in_venn = str(p4) + '%'
+        p5_in_venn = str(p5) + '%'
+        p6_in_venn = str(p6) + '%'
+        p7_in_venn = str(p7) + '%'
+
+        venn3 = venn3_unweighted(subsets=[p1_in_venn, p2_in_venn, p3_in_venn, p4_in_venn, p5_in_venn, p6_in_venn, p7_in_venn],
                          set_labels=[selectedChannelLabel1, selectedChannelLabel2, selectedChannelLabel3],
                          set_colors=(colors[0], colors[1], colors[2]), alpha=0.6)
-        plt.title("Voxel Percentage(%)\n" + imageName, fontsize=18)
-
+        plt.suptitle(imageName, fontsize=16)
+        plt.title('\n' + 'Voxel Percentage', fontsize=10)
 
         Rp = u'r\u209A'
         plt.text(0.7, 0.35, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n' + 'Threshold Range for ' + selectedChannelLabel3 + ': '+str(lowerThresholdList[2]) + '~' + str(upperThresholdList[2]) + '\n', fontsize=6)
@@ -1586,6 +1599,9 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         plt.text(0.7, -0.2, 'Intersection Coefficient: \n' + 'I = ' + str(intersection_coefficient) + '\n' + 'i1 = ' + str(i1) + '\n' + 'i2 = ' + str(i2) + '\n' + 'i3 = ' + str(i3), fontsize=6)
 
+        for text in venn3.subset_labels:
+            text.set_fontsize(8)
+
         vennImagename = imageName + ' Venn diagram.jpg'
         vennImagefileLocation = slicer.app.defaultScenePath + "/" + vennImagename
         plt.savefig(vennImagefileLocation,bbox_inches='tight')
@@ -1595,7 +1611,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         widget.imageWidget.setPixmap(pm)
         widget.imageWidget.setScaledContents(True)
         widget.imageWidget.show()
-
 
         # Draw the scatter plot for the first and second selected channels.
         df_hist_1_2 = pd.DataFrame({ChannelLabel1_in_csv: channel1_in_scatter_c1_c2.ravel(), ChannelLabel2_in_csv: channel2_in_scatter_c1_c2.ravel()})
@@ -1739,7 +1754,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         scatter_subsheet.insert_image('A1', scatter_plot_png_location_1_2)
         scatter_subsheet.insert_image('I1', scatter_plot_png_location_1_3)
         scatter_subsheet.insert_image('Q1', scatter_plot_png_location_2_3)
-
         writer.save()
 
 
