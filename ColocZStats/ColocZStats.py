@@ -1111,7 +1111,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         # Save the ROI node into into a markups json file.
         roiNode.AddDefaultStorageNode()
-        jsonFileName = slicer.app.defaultScenePath + "/" + imageName + " ROI.mrk.json"
+        jsonFileName = slicer.app.defaultScenePath + "/" + imageName + " ROI Information.mrk.json"
         slicer.util.saveNode(roiNode, jsonFileName)
 
         # Get cropped and thresholded volume data in numpy array
@@ -1367,7 +1367,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                          alpha=0.6)
 
         plt.suptitle(imageName, fontsize=15)
-        plt.title('\n' + 'Voxel Percentage', fontsize=10)
+        plt.title('\n' + 'Voxel Percentages', fontsize=10)
 
         Rp = u'r\u209A'
         plt.text(0.7, 0.2, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n', fontsize=6)
@@ -1588,7 +1588,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                          set_labels=[selectedChannelLabel1, selectedChannelLabel2, selectedChannelLabel3],
                          set_colors=(colors[0], colors[1], colors[2]), alpha=0.6)
         plt.suptitle(imageName, fontsize=16)
-        plt.title('\n' + 'Voxel Percentage', fontsize=10)
+        plt.title('\n' + 'Voxel Percentages', fontsize=10)
 
         Rp = u'r\u209A'
         plt.text(0.7, 0.35, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n' + 'Threshold Range for ' + selectedChannelLabel3 + ': '+str(lowerThresholdList[2]) + '~' + str(upperThresholdList[2]) + '\n', fontsize=6)
