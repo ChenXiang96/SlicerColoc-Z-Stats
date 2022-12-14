@@ -1362,9 +1362,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         p1_in_venn = str(p1) + '%'
         p2_in_venn = str(p2) + '%'
         p3_in_venn = str(p3) + '%'
-        venn2 = venn2_unweighted(subsets=[p1_in_venn, p2_in_venn, p3_in_venn], set_labels=[selectedChannelLabel1, selectedChannelLabel2],
-                         set_colors=(colors[0], colors[1]),
-                         alpha=0.6)
+        venn2 = venn2_unweighted(subsets=[p1_in_venn, p2_in_venn, p3_in_venn], set_labels=[selectedChannelLabel1, selectedChannelLabel2], set_colors=(colors[0], colors[1]), alpha=0.6)
 
         plt.suptitle(imageName, fontsize=15)
         plt.title('\n' + 'Voxel Percentages', fontsize=10)
@@ -1585,8 +1583,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         p7_in_venn = str(p7) + '%'
 
         venn3 = venn3_unweighted(subsets=[p1_in_venn, p2_in_venn, p3_in_venn, p4_in_venn, p5_in_venn, p6_in_venn, p7_in_venn],
-                         set_labels=[selectedChannelLabel1, selectedChannelLabel2, selectedChannelLabel3],
-                         set_colors=(colors[0], colors[1], colors[2]), alpha=0.6)
+                                 set_labels=[selectedChannelLabel1, selectedChannelLabel2, selectedChannelLabel3],
+                                 set_colors=(colors[0], colors[1], colors[2]), alpha=0.6)
         plt.suptitle(imageName, fontsize=16)
         plt.title('\n' + 'Voxel Percentages', fontsize=10)
 
