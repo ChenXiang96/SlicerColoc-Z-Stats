@@ -115,7 +115,7 @@ When any three channels are selected, the intersection coefficient can also be s
 
 **Intensity scatterplot example**:
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Scatter%20Plot%20example.png" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Scatterplot-example.png" width="600px">
 
 **Spreadsheet example**:
 
