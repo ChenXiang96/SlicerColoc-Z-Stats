@@ -107,7 +107,7 @@ When any three channels are selected, the intersection coefficient can also be s
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Add%20Annotations.gif" width="600px">
 
 
-* **Compute Colocalization**: Compute the image's colocalization metrics within the current ROI box, draw a Venn diagram to show the voxel percentage, Intensity Scatterplots corresponding to the selected channels, and generate a spreadsheet that contains the names of all selected channels, all corresponding threshold ranges, the colocalization metrics, and the information of the ROI box (Center, Orientation, Size).
+* **Compute Colocalization**: Compute the image's colocalization metrics within the current ROI box, draw a Venn diagram to show the voxel percentage, draw 2D Intensity Scatterplots corresponding to the selected channels, and generate a spreadsheet that contains the names of all selected channels, all corresponding threshold ranges, the colocalization metrics, and the information of the ROI box (Center, Orientation, Size).
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Colocalization-Computation.gif" width="600px">
 
@@ -129,8 +129,10 @@ When any three channels are selected, the intersection coefficient can also be s
 * **Touati Benoukraf** - [Touati Benoukraf](https://github.com/benoukraflab).
 
 ## Limitations
-* Currently, this extension only supports Z-stack images in Tagged image file format (.tif, .tiff).
+* Currently, this extension only supports multi-channel Z-stack images in Tagged image file format (.tif, .tiff).
+* Load multi-channel Z-stack images of up to 15 channels.
 * A maximum of 3 channels can be selected simultaneously for the computation of the colocalization percentage.
+
 
 
 ## References
