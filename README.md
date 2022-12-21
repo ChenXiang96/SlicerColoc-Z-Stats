@@ -131,7 +131,7 @@ When any three channels are selected, the intersection coefficient can also be s
 ## Limitations
 * Currently, this extension only supports multi-channel Z-stack images in Tagged image file format (.tif, .tiff).
 * Load multi-channel Z-stack images of up to 15 channels.
-* A maximum of 3 channels can be selected simultaneously for the computation of the colocalization percentage.
+* A maximum of 3 channels can be selected simultaneously for the computation.
 
 
 
