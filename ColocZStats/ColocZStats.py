@@ -1168,8 +1168,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
             newvolumeMM3 = np.sum(newarrayData)
             workVolumes.append(newarrayData)
-            volumeCM3 = Decimal(str(newvolumeMM3))
-            singleChannelVolumes.append(volumeCM3)
+            newvolumeMM3_decimal = Decimal(str(newvolumeMM3))
+            singleChannelVolumes.append(newvolumeMM3_decimal)
 
         # No intersection if there is only one channel
         if len(volumes) == 1:
@@ -1179,7 +1179,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         if len(workVolumes) == 2:
 
             volumeMM3 = np.sum(workVolumes[0] * workVolumes[1])
-            volumeCM3 = Decimal(str(volumeMM3))
+            volumeMM3_decimal = Decimal(str(volumeMM3))
 
             selectedChannelLabel1 = ChannelLabels[0]
             selectedChannelLabel2 = ChannelLabels[1]
@@ -1209,7 +1209,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             channel2_in_scatter = arrayData_upper_thresholded_list[1][roi_for_scatter]
 
             # Draw the Venn diagram and produce a spreadsheet.
-            self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeCM3, lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName, Pearson_coefficient, channel1_in_scatter, channel2_in_scatter)
+            self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeMM3_decimal, lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName, Pearson_coefficient, channel1_in_scatter, channel2_in_scatter)
 
             return
 
@@ -1219,11 +1219,11 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             if secondIndex == 3:
                 secondIndex = 0
             volumeMM3 = np.sum(workVolumes[index] * workVolumes[secondIndex])
-            volumeCM3 = Decimal(str(volumeMM3))
-            twoChannelsIntersectionVolumes.append(volumeCM3)
+            volumeMM3_decimal = Decimal(str(volumeMM3))
+            twoChannelsIntersectionVolumes.append(volumeMM3_decimal)
 
         volumeMM3 = np.sum(workVolumes[0] * workVolumes[1] * workVolumes[2])
-        volumeCM3 = Decimal(str(volumeMM3))
+        volumeMM3_decimal = Decimal(str(volumeMM3))
 
         Pearson_coefficient_1_2 = np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])*(thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1]))/(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])**2))*(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1])**2))))
 
@@ -1282,7 +1282,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         channel2_in_scatter_c2_c3 = arrayData_upper_thresholded_list[1][roi_for_scatter_c2_c3]
         channel3_in_scatter_c2_c3 = arrayData_upper_thresholded_list[2][roi_for_scatter_c2_c3]
 
-        self.drawVennForThreeChannels(widget, singleChannelVolumes, twoChannelsIntersectionVolumes, volumeCM3,
+        self.drawVennForThreeChannels(widget, singleChannelVolumes, twoChannelsIntersectionVolumes, volumeMM3_decimal,
                                       lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1,
                                       selectedChannelLabel2, selectedChannelLabel3, ChannelLabel1_in_csv,
                                       ChannelLabel2_in_csv, ChannelLabel3_in_csv, imageName, coords, roiSize,
