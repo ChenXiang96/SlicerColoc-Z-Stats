@@ -411,7 +411,7 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     def onComputeButtonClicked(self):
         """
         Called when the 'Compute Colocalization' button is clicked.
-        To compute the volume's colocalization percentage within the current ROI.
+        To compute the volume's colocalization within the current ROI.
         """
         self.logic.computeStats(self)
 
@@ -1000,7 +1000,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
     def computeStats(self, widget):
         """
-        To compute the volume's colocalization percentage within the current ROI.
+        To compute the volume's colocalization within the current ROI.
         """
         comboBox = widget.ui.InputVolumeComboBox
         filename = comboBox.itemData(comboBox.currentIndex)
@@ -1106,7 +1106,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
     def computeStatsForVolumes(self, volumes, roiNode, thresholds, imageName, widget, colors, ChannelLabels, coords, roiSize, orientationMatrix):
         """
-        To compute the volume's colocalization percentage within the current ROI.
+        To compute the volume's colocalization within the current ROI.
         """
 
         # Save the ROI node into into a markups json file.
@@ -1148,12 +1148,11 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             lowerThresholdList.append(lowerThreshold)
             upperThresholdList.append(upperThreshold)
 
-
             # newarrayData is to compute the intersection coefficient and i1-i3
             newarrayData = np.logical_and(arrayData>lowerThreshold, arrayData<=upperThreshold)
             newarrayData = newarrayData.astype(int)
 
-            # arrayData_upper_thresholded is to compute the pearson coefficient for threshold channels within the ROI box.
+            # arrayData_upper_thresholded is to compute the pearson coefficient for the thresholded channels within the ROI box.
             arrayData_upper_thresholded = np.where(arrayData > upperThreshold,0,arrayData)
             arrayData_upper_thresholded_list.append(arrayData_upper_thresholded)
             channel_for_scatter = arrayData_upper_thresholded > lowerThreshold
@@ -1175,7 +1174,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         if len(volumes) == 1:
             return
 
-        # Computes two channels intersection if there are only two channels
+        # Computes two channels' intersection if there are only two channels
         if len(workVolumes) == 2:
 
             volumeMM3 = np.sum(workVolumes[0] * workVolumes[1])
@@ -1184,7 +1183,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             selectedChannelLabel1 = ChannelLabels[0]
             selectedChannelLabel2 = ChannelLabels[1]
 
-            # Compute the pearson coefficient.
+            # Compute the pearson coefficient for the two selected channels.
             Pearson_coefficient = np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])*(thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1]))/(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])**2))*(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1])**2))))
 
             if math.isnan(Pearson_coefficient):
@@ -1202,7 +1201,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             else:
                 ChannelLabel2_in_csv = imageName + "_" + selectedChannelLabel2
 
-            # Define the ROI for drawing the scatter plot.
+            # Define the ROI for drawing the scatter diagram/2D histogram.
             roi_for_scatter = (channel_for_scatter_list[0] | channel_for_scatter_list[1])
             roi_for_scatter = morphology.remove_small_objects(roi_for_scatter, min_size=9)
             channel1_in_scatter = arrayData_upper_thresholded_list[0][roi_for_scatter]
@@ -1225,6 +1224,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         volumeMM3 = np.sum(workVolumes[0] * workVolumes[1] * workVolumes[2])
         volumeMM3_decimal = Decimal(str(volumeMM3))
 
+        # Compute the pearson coefficient for the three selected channels.
         Pearson_coefficient_1_2 = np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])*(thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1]))/(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[0] - thresholded_arrayData_bar_list[0])**2))*(np.sqrt(np.sum((thresholded_workVolumes_for_pearson[1] - thresholded_arrayData_bar_list[1])**2))))
 
         if math.isnan(Pearson_coefficient_1_2):
@@ -1266,7 +1266,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         else:
             ChannelLabel3_in_csv = imageName + "_" + selectedChannelLabel3
 
-
+        # Define the ROI for drawing the scatter diagram/2D histogram.
         roi_for_scatter_c1_c2 = (channel_for_scatter_list[0] | channel_for_scatter_list[1])
         roi_for_scatter_c1_c2 = morphology.remove_small_objects(roi_for_scatter_c1_c2, min_size=9)
         channel1_in_scatter_c1_c2 = arrayData_upper_thresholded_list[0][roi_for_scatter_c1_c2]
@@ -1337,7 +1337,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                 first_channel_sum = Decimal(p1) + Decimal(p3)
                 second_channel_sum = Decimal(p2) + Decimal(p3)
                 i1 = format(float(Decimal(p3) / first_channel_sum), '.4f')
-
                 i2 = format(float(Decimal(p3) / second_channel_sum), '.4f')
 
             print("The threshold range of " + ChannelLabel1_in_csv + " is: " + str(lowerThresholdList[0]) + "-" + str(upperThresholdList[0]))
@@ -1386,7 +1385,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         widget.imageWidget.show()
 
 
-        # Draw the scatter plot for the two selected channels.
+        # Draw the scatter diagram/2d histogram for the two selected channels.
         df_hist = pd.DataFrame({ChannelLabel1_in_csv: channel1_in_scatter.ravel(), ChannelLabel2_in_csv: channel2_in_scatter.ravel()})
         df_hist = df_hist.groupby(df_hist.columns.tolist()).size().reset_index(name="count")
         df_hist["log count"] = np.log10(df_hist["count"])
@@ -1402,7 +1401,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             padding=0.02,
         )
 
-        # Display and save the scatter plot.
+        # Display and save the scatter diagram.
         scatter_plot_png_location = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' +ChannelLabel2_in_csv+ '_Scatter Plot.png'
         hv.save(hv_fig, scatter_plot_png_location, fmt='png')
         pm2 = qt.QPixmap(scatter_plot_png_location)
@@ -1438,7 +1437,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         ROI_Information_column_2 = ["LPS", coords_str, orientation_str, roiSize_str, jsonFileName]
         ROI_Information = {"ROI Information": ROI_Information_column_1, "Values": ROI_Information_column_2}
 
-
         df1 = pd.DataFrame.from_dict(threshold_Range, orient='index')
         df1 = df1.transpose()
 
@@ -1451,8 +1449,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         df4 = pd.DataFrame.from_dict(image_intersection, orient='index')
         df4 = df4.transpose()
 
-
-
         excel_out_path = slicer.app.defaultScenePath + "/" + imageName + " Statistics.xlsx"
         writer = pd.ExcelWriter(excel_out_path , engine='xlsxwriter')
         df1.to_excel(writer, sheet_name = 'Threshold Range', index=False)
@@ -1462,7 +1458,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         venn_subsheet = writer.book.add_worksheet('Venn Diagram')
         venn_subsheet.insert_image('A1', vennImagefileLocation)
 
-        scatter_subsheet = writer.book.add_worksheet('Scatterplots')
+        scatter_subsheet = writer.book.add_worksheet('2D Histogram')
         scatter_subsheet.insert_image('A1', scatter_plot_png_location)
         writer.save()
 
@@ -1610,7 +1606,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         widget.imageWidget.setScaledContents(True)
         widget.imageWidget.show()
 
-        # Draw the scatter plot for the first and second selected channels.
+        # Draw the scatter diagram/2d histogram for the first and second selected channels.
         df_hist_1_2 = pd.DataFrame({ChannelLabel1_in_csv: channel1_in_scatter_c1_c2.ravel(), ChannelLabel2_in_csv: channel2_in_scatter_c1_c2.ravel()})
         df_hist_1_2 = df_hist_1_2.groupby(df_hist_1_2.columns.tolist()).size().reset_index(name="count")
         df_hist_1_2["log count"] = np.log10(df_hist_1_2["count"])
@@ -1626,7 +1622,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             padding=0.02,
         )
 
-        # Display and save the scatter plot.
+        # Display and save the scatter diagram.
         scatter_plot_png_location_1_2 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' +ChannelLabel2_in_csv+ '_Scatter Plot.png'
         hv.save(hv_fig_1_2, scatter_plot_png_location_1_2, fmt='png')
         pm2 = qt.QPixmap(scatter_plot_png_location_1_2)
@@ -1637,7 +1633,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         scatter_plot_html_location_1_2 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' + ChannelLabel2_in_csv + '_Scatter Plot.html'
         hv.save(hv_fig_1_2, scatter_plot_html_location_1_2)
 
-        # Draw the scatter plot for the first and third selected channels.
+        # Draw the scatter diagram/2d histogram for the first and third selected channels.
         df_hist_1_3 = pd.DataFrame({ChannelLabel1_in_csv: channel1_in_scatter_c1_c3.ravel(), ChannelLabel3_in_csv: channel3_in_scatter_c1_c3.ravel()})
         df_hist_1_3 = df_hist_1_3.groupby(df_hist_1_3.columns.tolist()).size().reset_index(name="count")
         df_hist_1_3["log count"] = np.log10(df_hist_1_3["count"])
@@ -1653,7 +1649,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             padding=0.02,
         )
 
-        # Display and save the scatter plot.
+        # Display and save the scatter diagram.
         scatter_plot_png_location_1_3 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' +ChannelLabel3_in_csv+ '_Scatter Plot.png'
         hv.save(hv_fig_1_3, scatter_plot_png_location_1_3, fmt='png')
         pm3 = qt.QPixmap(scatter_plot_png_location_1_3)
@@ -1665,7 +1661,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         hv.save(hv_fig_1_3, scatter_plot_html_location_1_3)
 
 
-        # Draw the scatter plot for the second and third selected channels.
+        # Draw the scatter diagram/2d histogram for the second and third selected channels.
         df_hist_2_3 = pd.DataFrame({ChannelLabel2_in_csv: channel2_in_scatter_c2_c3.ravel(), ChannelLabel3_in_csv: channel3_in_scatter_c2_c3.ravel()})
         df_hist_2_3 = df_hist_2_3.groupby(df_hist_2_3.columns.tolist()).size().reset_index(name="count")
         df_hist_2_3["log count"] = np.log10(df_hist_2_3["count"])
@@ -1681,7 +1677,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             padding=0.02,
         )
 
-        # Display and save the scatter plot.
+        # Display and save the scatter diagram.
         scatter_plot_png_location_2_3 = slicer.app.defaultScenePath + "/" + ChannelLabel2_in_csv + ' and ' +ChannelLabel3_in_csv+ '_Scatter Plot.png'
         hv.save(hv_fig_2_3, scatter_plot_png_location_2_3, fmt='png')
         pm4 = qt.QPixmap(scatter_plot_png_location_2_3)
@@ -1745,7 +1741,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         df4.to_excel(writer, sheet_name='Intersection Coefficient', index=False)
         venn_subsheet = writer.book.add_worksheet('Venn Diagram')
         venn_subsheet.insert_image('A1', vennImagefileLocation)
-        scatter_subsheet = writer.book.add_worksheet('Scatterplots')
+        scatter_subsheet = writer.book.add_worksheet('2D Histogram')
         scatter_subsheet.insert_image('A1', scatter_plot_png_location_1_2)
         scatter_subsheet.insert_image('I1', scatter_plot_png_location_1_3)
         scatter_subsheet.insert_image('Q1', scatter_plot_png_location_2_3)
