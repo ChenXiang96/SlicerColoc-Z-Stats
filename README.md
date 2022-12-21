@@ -2,14 +2,14 @@
 ## Overview
 SlicerColoc-Z-Stats is a 3D Slicer extension for computing proteins' colocalization (spatial overlap between different channels) of Z-stack images.
 
-Users can adjust the volume rendering of the Z-stack image via customizable thresholds, select the region of interest (ROI) by the bounding box and generate a Venn diagram, 2D intensity scatterplots and a spreadsheet, which displays/saves the colocalization metrics.
+Users can adjust the volume rendering of the Z-stack image via customizable thresholds, select the region of interest (ROI) by the bounding box and generate a Venn diagram, 2D histograms and a spreadsheet, which displays/saves the colocalization metrics.
 
 The license for this extension is [MIT](https://github.com/benoukraflab/SlicerColoc-Z-Stats/blob/main/LICENSE)
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Screenshots.png" width="800px">
 
 ## Installation
-* Since the 2D intensity scatterplots produced by our extension are created by the Bokeh package, in order to be able to export PNG images, Bokeh needs to use a browser to render the PNG. In order for this to work, a driver is required to be installed before installing our extension in the 3D Slicer. Take installing the *ChromeDriver* as an example: Download and unzip the *ChromeDriver* corresponding to your Chrome version from this [link](https://chromedriver.chromium.org/downloads), and make sure it's in your PATH. For more information on how to install the driver, check out this [link](https://docs.bokeh.org/en/2.4.2/docs/user_guide/export.html#). 
+* Since the 2D histograms produced by our extension are created by the Bokeh package, in order to be able to export PNG images, Bokeh needs to use a browser to render the PNG. In order for this to work, a driver is required to be installed before installing our extension in the 3D Slicer. Take installing the *ChromeDriver* as an example: Download and unzip the *ChromeDriver* corresponding to your Chrome version from this [link](https://chromedriver.chromium.org/downloads), and make sure it's in your PATH. For more information on how to install the driver, check out this [link](https://docs.bokeh.org/en/2.4.2/docs/user_guide/export.html#). 
 * The 3D Slicer stable version 5.2.1 is needed to use this extension: [version 5.2.1](https://download.slicer.org/). Or it can be downloaded from this [link](https://slicer-packages.kitware.com/#collection/5f4474d0e1d8c75dfc70547e/folder/637f77c6517443dc5dc7281f). For more information on how to install 3D Slicer, check out this [link](https://slicer.readthedocs.io/en/latest/user_guide/getting_started.html).
   * Open “Extensions Manager” using menu: View / Extensions manager. On macOS, Extensions manager requires the [application to be installed](https://slicer.readthedocs.io/en/latest/user_guide/getting_started.html#mac).
   * Go to “Install extensions” tab
@@ -26,7 +26,7 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 * Adjust the ROI box to any position.
 * Click the 'Re-center ROI' button to reposition the image region within the ROI box to the scene's center.
 * Adjust the slider under each channel to any position. The threshold of each channel can be changed synchronously with the sliding of the slider, which can be observed in the 3D view.
-* Click the 'Compute Colocalization' button and wait seconds to get 2D intensity scatterplots which display the intensity distribution of selected channels, a Venn diagram and a spreadsheet, which displays the image's colocalization metrics within the current ROI. The scatterplots, Venn diagram and the spreadsheet are saved in the default scene location of slicer version 5.2.1. (The default scene location can be found under the 'Edit/Application Settings' option within 3D Slicer. It can also be read/written from Python as *slicer.app.defaultScenePath*. It can also be changed, but note that the default scene location should be a folder with read and write permissions).
+* Click the 'Compute Colocalization' button and wait seconds to get 2D histograms which display the intensity distribution of selected channels, a Venn diagram and a spreadsheet, which displays the image's colocalization metrics within the current ROI. The 2D histograms, Venn diagram and the spreadsheet are saved in the default scene location of slicer version 5.2.1. (The default scene location can be found under the 'Edit/Application Settings' option within 3D Slicer. It can also be read/written from Python as *slicer.app.defaultScenePath*. It can also be changed, but note that the default scene location should be a folder with read and write permissions).
 * Click the 'SAVE' button to save the scene, the annotations, and the status of the UI to a 'mrml' file for reloading.
 * [Download links to sample image](https://drive.google.com/file/d/1IYlggsikgtQR7jXE83sSS2ZtMCuswsA0/view?usp=sharing)
 
@@ -107,7 +107,7 @@ When any three channels are selected, the intersection coefficient can also be s
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Add%20Annotations.gif" width="600px">
 
 
-* **Compute Colocalization**: Compute the image's colocalization metrics within the current ROI box, draw a Venn diagram to show the voxel percentage, draw 2D Intensity Scatterplots corresponding to the selected channels, and generate a spreadsheet that contains the names of all selected channels, all corresponding threshold ranges, the colocalization metrics, and the information of the ROI box (Center, Orientation, Size).
+* **Compute Colocalization**: Compute the image's colocalization metrics within the current ROI box, draw a Venn diagram to show the voxel percentage, draw 2D histograms corresponding to the selected channels, and generate a spreadsheet that contains the names of all selected channels, all corresponding threshold ranges, the colocalization metrics, and the information of the ROI box (Center, Orientation, Size).
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Colocalization-Computation.gif" width="600px">
 
@@ -115,7 +115,7 @@ When any three channels are selected, the intersection coefficient can also be s
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Venn-Example.png" width="600px">
 
-**Intensity scatterplot example**:
+**2D histogram example**:
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Scatterplot-example.png" width="600px">
 
