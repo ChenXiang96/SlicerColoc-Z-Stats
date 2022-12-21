@@ -1420,7 +1420,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         threshold_Range_column_1 = [ChannelLabel1_in_csv , ChannelLabel2_in_csv]
         threshold_Range_column_2 = [str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]), str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1])]
-        threshold_Range = {'Channels': threshold_Range_column_1, 'Threshold range': threshold_Range_column_2}
+        threshold_Range = {'Channels': threshold_Range_column_1, 'Threshold Range': threshold_Range_column_2}
 
         volume_pearson_column_1   = [ChannelLabel1_in_csv + " and " + ChannelLabel2_in_csv]
         volume_pearson_column_2  = [str(Pearson_coefficient)]
@@ -1434,7 +1434,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         image_intersection  = {'Intersection Coefficient (I)' : volume_intersection_column_2, 'i1' : volume_intersection_column_3,'i2' : volume_intersection_column_4}
 
-        ROI_Information_column_1 = ["Coordinate System: ", "Center: ", "Orientation: ", "Size: ", "ROI JSON File location: "]
+        ROI_Information_column_1 = ["Coordinate System: ", "Center: ", "Orientation: ", "Size: ", "ROI JSON File Location: "]
         ROI_Information_column_2 = ["LPS", coords_str, orientation_str, roiSize_str, jsonFileName]
         ROI_Information = {"ROI Information": ROI_Information_column_1, "Values": ROI_Information_column_2}
 
@@ -1706,7 +1706,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                                     str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]),
                                     str(lowerThresholdList[2]) + '~' + str(upperThresholdList[2])]
 
-        threshold_Range = {'Channels': threshold_Range_column_1, 'Threshold range': threshold_Range_column_2}
+        threshold_Range = {'Channels': threshold_Range_column_1, 'Threshold Range': threshold_Range_column_2}
 
         volume_pearson_column_1 = [ChannelLabel1_in_csv + " and " + ChannelLabel2_in_csv, ChannelLabel1_in_csv + " and " + ChannelLabel3_in_csv, ChannelLabel2_in_csv + " and " + ChannelLabel3_in_csv]
 
@@ -1717,12 +1717,9 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         volume_intersection_column_3 = [str(i1)]
         volume_intersection_column_4 = [str(i2)]
         volume_intersection_column_5 = [str(i3)]
-        image_intersection = {'Intersection Coefficient (I)': volume_intersection_column_2,
-                                'i1': volume_intersection_column_3, 'i2': volume_intersection_column_4,'i3': volume_intersection_column_5 }
+        image_intersection = {'Intersection Coefficient (I)': volume_intersection_column_2, 'i1': volume_intersection_column_3, 'i2': volume_intersection_column_4,'i3': volume_intersection_column_5 }
 
-
-        ROI_Information_column_1 = ["Coordinate System: ", "Center: ", "Orientation: ", "Size: ",
-                                    "ROI JSON File location: "]
+        ROI_Information_column_1 = ["Coordinate System: ", "Center: ", "Orientation: ", "Size: ", "ROI JSON File Location: "]
 
         ROI_Information_column_2 = ["LPS", coords_str, orientation_str, roiSize_str, jsonFileName]
 
