@@ -1402,14 +1402,14 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         )
 
         # Display and save the scatter diagram.
-        scatter_plot_png_location = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' +ChannelLabel2_in_csv+ '_Scatter Plot.png'
+        scatter_plot_png_location = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' +ChannelLabel2_in_csv+ '_2D Histogram.png'
         hv.save(hv_fig, scatter_plot_png_location, fmt='png')
         pm2 = qt.QPixmap(scatter_plot_png_location)
         widget.imageWidget2 = qt.QLabel()
         widget.imageWidget2.setPixmap(pm2)
         widget.imageWidget2.setScaledContents(True)
         widget.imageWidget2.show()
-        scatter_plot_html_location = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' + ChannelLabel2_in_csv + '_Scatter Plot.html'
+        scatter_plot_html_location = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' + ChannelLabel2_in_csv + '_2D Histogram.html'
         hv.save(hv_fig, scatter_plot_html_location)
 
         # Create a spreadsheet to save the colocalization and ROI information.
@@ -1623,14 +1623,14 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         )
 
         # Display and save the scatter diagram.
-        scatter_plot_png_location_1_2 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' +ChannelLabel2_in_csv+ '_Scatter Plot.png'
+        scatter_plot_png_location_1_2 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' +ChannelLabel2_in_csv+ '_2D Histogram.png'
         hv.save(hv_fig_1_2, scatter_plot_png_location_1_2, fmt='png')
         pm2 = qt.QPixmap(scatter_plot_png_location_1_2)
         widget.imageWidget2 = qt.QLabel()
         widget.imageWidget2.setPixmap(pm2)
         widget.imageWidget2.setScaledContents(True)
         widget.imageWidget2.show()
-        scatter_plot_html_location_1_2 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' + ChannelLabel2_in_csv + '_Scatter Plot.html'
+        scatter_plot_html_location_1_2 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' + ChannelLabel2_in_csv + '_2D Histogram.html'
         hv.save(hv_fig_1_2, scatter_plot_html_location_1_2)
 
         # Draw the scatter diagram/2d histogram for the first and third selected channels.
@@ -1650,14 +1650,14 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         )
 
         # Display and save the scatter diagram.
-        scatter_plot_png_location_1_3 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' +ChannelLabel3_in_csv+ '_Scatter Plot.png'
+        scatter_plot_png_location_1_3 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' +ChannelLabel3_in_csv+ '_2D Histogram.png'
         hv.save(hv_fig_1_3, scatter_plot_png_location_1_3, fmt='png')
         pm3 = qt.QPixmap(scatter_plot_png_location_1_3)
         widget.imageWidget3 = qt.QLabel()
         widget.imageWidget3.setPixmap(pm3)
         widget.imageWidget3.setScaledContents(True)
         widget.imageWidget3.show()
-        scatter_plot_html_location_1_3 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' + ChannelLabel3_in_csv + '_Scatter Plot.html'
+        scatter_plot_html_location_1_3 = slicer.app.defaultScenePath + "/" + ChannelLabel1_in_csv + ' and ' + ChannelLabel3_in_csv + '_2D Histogram.html'
         hv.save(hv_fig_1_3, scatter_plot_html_location_1_3)
 
 
@@ -1678,14 +1678,14 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         )
 
         # Display and save the scatter diagram.
-        scatter_plot_png_location_2_3 = slicer.app.defaultScenePath + "/" + ChannelLabel2_in_csv + ' and ' +ChannelLabel3_in_csv+ '_Scatter Plot.png'
+        scatter_plot_png_location_2_3 = slicer.app.defaultScenePath + "/" + ChannelLabel2_in_csv + ' and ' +ChannelLabel3_in_csv+ '_2D Histogram.png'
         hv.save(hv_fig_2_3, scatter_plot_png_location_2_3, fmt='png')
         pm4 = qt.QPixmap(scatter_plot_png_location_2_3)
         widget.imageWidget4 = qt.QLabel()
         widget.imageWidget4.setPixmap(pm4)
         widget.imageWidget4.setScaledContents(True)
         widget.imageWidget4.show()
-        scatter_plot_html_location_2_3 = slicer.app.defaultScenePath + "/" + ChannelLabel2_in_csv + ' and ' + ChannelLabel3_in_csv + '_Scatter Plot.html'
+        scatter_plot_html_location_2_3 = slicer.app.defaultScenePath + "/" + ChannelLabel2_in_csv + ' and ' + ChannelLabel3_in_csv + '_2D Histogram.html'
         hv.save(hv_fig_2_3, scatter_plot_html_location_2_3)
 
 
