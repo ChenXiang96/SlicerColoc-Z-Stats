@@ -45,7 +45,7 @@ For the case of any two selected channels:
 The intersection contribution of a given voxel can be defined as the product of the two channels.
 The intersection coefficient is:
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Intersection%20for%20two%20channels.png" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Intersection%20for%20two.png" width="600px">
 
 The numerator: the total number of intersecting voxels between the two channels. 
 
@@ -53,27 +53,27 @@ The denominator: the total number of voxels of both channels together, which is 
 
 The intersection coefficient can also be split into two separate coefficients (To report what portion of the first and second channels are intersecting):
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i1%20%20for%20two%20selected%20channels.png" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i1%20for%20two.png" width="600px">
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i2%20%20for%20%20two%20selected%20channels.png" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i2%20for%20two.png" width="600px">
 
 Based on the above method of obtaining the intersection coefficient between two channels, the functionality of obtaining the intersection coefficient of three channels has been added to ColocZStats.
 For the case of any three selected channels:
 The intersection contribution of a given voxel can be defined as the product of the three channels.
 The intersection coefficient is:
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Intersection%20for%20three%20channels.png" width="900px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/intersection%20for%20three.png" width="900px">
 
 The numerator: the total number of intersecting voxels among three channels. 
 
 The denominator: the total voxels’ number of the three selected channels together.
 When any three channels are selected, the intersection coefficient can also be split into three separate coefficients (To report what portion of the three channels are intersecting):
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i1%20%20for%20%20three%20selected%20channels.png" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i1%20for%20three.png" width="600px">
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i2%20%20for%20%20three%20selected%20channels.png" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i2%20for%20three.png" width="600px">
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i3%20%20for%20%20three%20selected%20channels.png" width="600px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i3%20for%20three.png" width="600px">
 
 
 ## Panels and their use
