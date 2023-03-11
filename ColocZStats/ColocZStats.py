@@ -87,8 +87,6 @@ except ModuleNotFoundError:
 from matplotlib_venn import venn2_unweighted
 from matplotlib_venn import venn3_unweighted
 
-from skimage import data, img_as_float, color, img_as_ubyte
-
 matplotlib.use("Agg")
 from pylab import *
 import matplotlib.pyplot as plt
