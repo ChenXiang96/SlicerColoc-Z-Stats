@@ -21,12 +21,12 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 ## Tutorial
 * Start 3D Slicer
 * Go to "ColocZStats" extension.
-* Load a Z-stack TIFF image: Click the 'Data' button or the 'Add Data' button under the 'File' tab, and click the 'Choose File(s) to Add' button to load the image.
-* Click on the eye icon in front of 'Display ROI' to show the ROI box of the current image in the 3D View.
+* Load a Z-stack TIFF image: Click the 'Data' button or the 'Add Data' button under the 'File' tab, and click the 'Choose File(s) to Add' button to load the image. When a Z-stack image is loaded into ColocZStats, each of its channels is automatically split into separate volume nodes, and each volume node is assigned a distinct color for rendering. This allows you to view and manipulate each channel independently. 
+* Click on the eye icon in front of 'Display ROI' to create and show the ROI box of the current image in the 3D View. Please note that after the image is loaded, the initial ROI box created by clicking the button may not fit perfectly with the entire image. However, you can still customize and drag the ROI box to any position you need. If you want to select the entire image for calculation, make sure to drag the ROI box to a position that completely contains the entire image.
 * Adjust the ROI box to any position.
 * Click the 'Re-center ROI' button to reposition the image region within the ROI box to the scene's center.
 * Adjust the slider under each channel to any position. The threshold of each channel can be changed synchronously with the sliding of the slider, which can be observed in the 3D view.
-* Click the 'Compute Colocalization' button and wait seconds to get 2D histograms which display the intensity distribution of selected channels, a Venn diagram and a spreadsheet, which displays the image's colocalization metrics within the current ROI. The 2D histograms, Venn diagram and the spreadsheet are saved in the default scene location of slicer version 5.2.1. (The default scene location can be found under the 'Edit/Application Settings' option within 3D Slicer. It can also be read/written from Python as *slicer.app.defaultScenePath*. It can also be changed, but note that the default scene location should be a folder with read and write permissions).
+* To obtain 2D histograms, a Venn diagram, and a spreadsheet displaying/saving the image's colocalization metrics within the current ROI, click the 'Compute Colocalization' button and wait a few seconds. Please note that when there are too many voxels in the ROI box, it may take 2-3 minutes for Bokeh to render the 2D histogram. The 2D histograms, Venn diagram and the spreadsheet are saved in the default scene location of 3D slicer. (The default scene location can be found under the 'Edit/Application Settings' option within 3D Slicer. It can also be read/written from Python as *slicer.app.defaultScenePath*. It can also be changed, but note that the default scene location should be a folder with read and write permissions).
 * Click the 'SAVE' button to save the scene, the annotations, and the status of the UI to a 'mrml' file for reloading.
 * [Download links to sample image](https://drive.google.com/file/d/1IYlggsikgtQR7jXE83sSS2ZtMCuswsA0/view?usp=sharing)
 
@@ -77,8 +77,8 @@ When any three channels are selected, the intersection coefficient can also be s
 
 
 ## Panels and their use
-* **Volume**: Select the current volume to render and operate. 
-* **Display ROI**: Show/hide the ROI bounding box of the current volume. Note that after the image is loaded, the ROI box created by clicking the "Display ROI" button for the first time does not actually totaly fit with the entire image, but the ROI box can still be customized and dragged to any location. If you want to select the entire image for calculation, please make sure to drag the ROI box to any position that can completely contain the entire image.
+* **Volume**: Select the current volume which contains multiple channels to render and operate. 
+* **Display ROI**: Show/hide the ROI bounding box of the current volume. 
 
 * **Re-center ROI**: Reposition the image region selected by the ROI bounding box to the center of the scene:
 
