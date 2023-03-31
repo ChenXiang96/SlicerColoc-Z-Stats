@@ -10,13 +10,13 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 
 ## Installation
 * Since the 2D histograms produced by our extension are created by the Bokeh package, in order to be able to export PNG images, Bokeh needs to use a browser to render the PNG. In order for this to work, a driver is required to be installed before installing our extension in the 3D Slicer. Take installing the *ChromeDriver* as an example: Download and unzip the *ChromeDriver* corresponding to your Chrome version from this [link](https://chromedriver.chromium.org/downloads), and make sure it's in your PATH. For more information on how to install the driver, check out this [link](https://docs.bokeh.org/en/2.4.2/docs/user_guide/export.html#). 
-* The 3D Slicer stable version 5.2.1 is needed to use this extension: [version 5.2.1](https://download.slicer.org/). Or it can be downloaded from this [link](https://slicer-packages.kitware.com/#collection/5f4474d0e1d8c75dfc70547e/folder/637f77c6517443dc5dc7281f). For more information on how to install 3D Slicer, check out this [link](https://slicer.readthedocs.io/en/latest/user_guide/getting_started.html).
-  * Open “Extensions Manager” using menu: View / Extensions manager. On macOS, Extensions manager requires the [application to be installed](https://slicer.readthedocs.io/en/latest/user_guide/getting_started.html#mac).
+* The 3D Slicer stable version 5.2.2 is needed to use this extension: [version 5.2.2](https://download.slicer.org/). Or it can be downloaded from this [link](https://slicer-packages.kitware.com/#collection/5f4474d0e1d8c75dfc70547e/folder/63f5a1888939577d9867aba0). For more information on how to install 3D Slicer, check out this [link](https://slicer.readthedocs.io/en/latest/user_guide/getting_started.html).
+  * On Windows, open “Extensions Manager” using menu: View / Extensions manager.
   * Go to “Install extensions” tab
   * Go to “Quantification” category
   * Click “Install” button of “ColocZStats” to install it.
   * Wait until “Restart” button in the lower-right corner becomes enabled, then click “Restart”.
-  * For more information on how to install extension via the “Extensions Manager”, check out this [link](https://slicer.readthedocs.io/en/latest/user_guide/extensions_manager.html#install-extensions). Note that the URL for the *Slicer Extensions Catalog* listed in the link above is outdated, the latest URL is: [https://extensions.slicer.org/catalog/All/31317/win](https://extensions.slicer.org/catalog/All/31317/win).
+  * For more information on how to install extension via the “Extensions Manager”, check out this [link](https://slicer.readthedocs.io/en/latest/user_guide/extensions_manager.html#install-extensions). Note that the URL for the *Slicer Extensions Catalog* listed in the link above is outdated, the latest URL is: [https://extensions.slicer.org/catalog/All/31382/win](https://extensions.slicer.org/catalog/All/31382/win).
 
 ## Tutorial
 * Start 3D Slicer
