@@ -1458,7 +1458,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         scatter_subsheet = writer.book.add_worksheet('2D Histogram')
         scatter_subsheet.insert_image('A1', scatter_plot_png_location)
-        writer.save()
+        writer.close()
 
     def drawVennForThreeChannels(self, widget, singleChannelVolumes, twoChannelsIntersectionVolumes, intersection_1_2_3,
                                  lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2,
@@ -1743,7 +1743,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         scatter_subsheet.insert_image('A1', scatter_plot_png_location_1_2)
         scatter_subsheet.insert_image('I1', scatter_plot_png_location_1_3)
         scatter_subsheet.insert_image('Q1', scatter_plot_png_location_2_3)
-        writer.save()
+        writer.close()
 
 
 #
