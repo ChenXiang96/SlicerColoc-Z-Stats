@@ -7,37 +7,16 @@ from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
 
 try:
-    import matplotlib
+   import numpy as np
 except ModuleNotFoundError:
-    slicer.util.pip_install("matplotlib")
-    import matplotlib
+   slicer.util.pip_install("numpy")
+   import numpy as np
 
 try:
-    import decimal
+    from skimage import morphology
 except ModuleNotFoundError:
-    slicer.util.pip_install("decimal")
-    import decimal
-from decimal import Decimal
-
-
-try:
-    import math
-except ModuleNotFoundError:
-    slicer.util.pip_install("python-math")
-    import math
-
-
-try:
-    import pandas as pd
-except ModuleNotFoundError:
-    slicer.util.pip_install("pandas")
-    import pandas as pd
-
-try:
-    import xlsxwriter
-except ModuleNotFoundError:
-    slicer.util.pip_install("xlsxwriter")
-    import xlsxwriter
+    slicer.util.pip_install("scikit-image")
+    from skimage import morphology
 
 try:
     import warnings
@@ -51,45 +30,6 @@ import sys
 if not hasattr(sys, 'argv'):
     sys.argv = ['']
 
-try:
-    import tifffile
-except ModuleNotFoundError:
-    slicer.util.pip_install("tifffile")
-    import tifffile
-
-
-try:
-    from skimage import morphology
-except ModuleNotFoundError:
-    slicer.util.pip_install("scikit-image")
-    from skimage import morphology
-
-try:
-    import selenium
-except ModuleNotFoundError:
-    slicer.util.pip_install("selenium")
-    import selenium
-
-try:
-    import holoviews as hv
-except ModuleNotFoundError:
-    slicer.util.pip_install("holoviews")
-    import holoviews as hv
-hv.extension('bokeh')
-
-
-try:
-    import matplotlib_venn
-except ModuleNotFoundError:
-    slicer.util.pip_install("matplotlib_venn")
-    import matplotlib_venn
-
-from matplotlib_venn import venn2_unweighted
-from matplotlib_venn import venn3_unweighted
-
-matplotlib.use("Agg")
-from pylab import *
-import matplotlib.pyplot as plt
 
 #
 # ColocZStats
@@ -234,6 +174,8 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             annotationTextNode = self.annotationDict[filename]
             if annotationTextNode:
                 self.ui.AnnotationText.setMRMLTextNode(annotationTextNode)
+        else:
+            self.ui.AnnotationText.setMRMLTextNode(None)
 
         if filename in self.InputCheckedDict:
             self.ui.InputCheckBox.checked = self.InputCheckedDict[filename]
@@ -254,7 +196,7 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     def onInputCheckBoxClicked(self, checked):
         """
         Called when the checkbox before the input volume is clicked.
-        To control the visibility of the volume in the scene.
+        To control the visibility of the entire volume(includes all channels) in the scene.
         """
         if self._updatingGUIFromParameterNode:
             return
@@ -310,7 +252,6 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 displayNode = volRenLogic.GetFirstVolumeRenderingDisplayNode(channelVolumeNode)
                 displayNode.SetAndObserveROINodeID(roiNodeID)
                 if createROINode:
-                    # volRenLogic.FitROIToVolume(displayNode)
                     cropVolumeParameters = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLCropVolumeParametersNode")
                     cropVolumeParameters.SetInputVolumeNodeID(channelVolumeNode.GetID())
                     cropVolumeParameters.SetROINodeID(roiNodeID)
@@ -571,10 +512,18 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                     visibility = (self._parameterNode.GetParameter(visibilityParameterName) == "true")
                     channelLabelName = "ChannelLabel" + str(index) + "_" + str(channelIndex)
                     channelLabel = str(self._parameterNode.GetParameter(channelLabelName))
+
                     lowerThresholdParameterName = "LowerThreshold" + str(index) + "_" + str(channelIndex)
                     lowerThreshold = int(float(self._parameterNode.GetParameter(lowerThresholdParameterName)))
+
                     upperThresholdParameterName = "UpperThreshold" + str(index) + "_" + str(channelIndex)
                     upperThreshold = int(float(self._parameterNode.GetParameter(upperThresholdParameterName)))
+
+                    lowerThresholdBoundParameterName = "LowerThresholdBound" + str(index) + "_" + str(channelIndex)
+                    lowerThresholdBound = int(float(self._parameterNode.GetParameter(lowerThresholdBoundParameterName)))
+
+                    upperThresholdBoundParameterName = "UpperThresholdBound" + str(index) + "_" + str(channelIndex)
+                    upperThresholdBound = int(float(self._parameterNode.GetParameter(upperThresholdBoundParameterName)))
 
                     # Create widgets for channel volume node
                     subHorizontallayout = qt.QHBoxLayout()
@@ -593,6 +542,8 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                     thresholdSlider.setMRMLVolumeNode(channelVolumes[channelIndex])
                     thresholdSlider.lowerThreshold = lowerThreshold
                     thresholdSlider.upperThreshold = upperThreshold
+                    thresholdSlider.lowerThresholdBound = lowerThresholdBound
+                    thresholdSlider.upperThresholdBound = upperThresholdBound
                     self.connectThresholdChangeSlot(thresholdSlider, channelVolumes[channelIndex])
                     layout.addItem(subHorizontallayout)
                     layout.addWidget(thresholdSlider)
@@ -616,7 +567,6 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 checkBoxes = groupBox.findChildren(qt.QCheckBox)
                 thresholdSliders = groupBox.findChildren(slicer.qMRMLVolumeThresholdWidget)
 
-
                 for channelIndex in range(len(channelVolumes)):
                     # Update the state of channels' Visibility, LowerThreshold, UpperThreshold.
                     visibilityParameterName = "Visibility" + str(index) + "_" + str(channelIndex)
@@ -626,13 +576,26 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                     checkBox = checkBoxes[channelIndex]
                     checkBox.setChecked(visibility)
                     checkBox.setText(channelLabel)
+
                     lowerThresholdParameterName = "LowerThreshold" + str(index) + "_" + str(channelIndex)
                     lowerThreshold = int(float(self._parameterNode.GetParameter(lowerThresholdParameterName)))
+
                     upperThresholdParameterName = "UpperThreshold" + str(index) + "_" + str(channelIndex)
                     upperThreshold = int(float(self._parameterNode.GetParameter(upperThresholdParameterName)))
+
+                    lowerThresholdBoundParameterName = "LowerThresholdBound" + str(index) + "_" + str(channelIndex)
+                    lowerThresholdBound = int(float(self._parameterNode.GetParameter(lowerThresholdBoundParameterName)))
+
+                    upperThresholdBoundParameterName = "UpperThresholdBound" + str(index) + "_" + str(channelIndex)
+                    upperThresholdBound = int(float(self._parameterNode.GetParameter(upperThresholdBoundParameterName)))
+
                     thresholdSlider = thresholdSliders[channelIndex]
                     thresholdSlider.lowerThreshold = lowerThreshold
                     thresholdSlider.upperThreshold = upperThreshold
+
+                    thresholdSlider.lowerThresholdBound = lowerThresholdBound
+                    thresholdSlider.upperThresholdBound = upperThresholdBound
+
                 annotationTextNode = self.annotationDict[filepath]
                 annotationTextNode.SetText(annotationText)
             currentFile = comboBox.itemData(comboBox.currentIndex)
@@ -740,10 +703,18 @@ class ColocZStatsWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 visibilityParameterName = "Visibility" + indexStr + "_" + channelIndexStr
                 visibility = "true" if checkBox.checked else "false"
                 self._parameterNode.SetParameter(visibilityParameterName, visibility)
+
                 lowerThresholdParameterName = "LowerThreshold" + indexStr + "_" + channelIndexStr
                 self._parameterNode.SetParameter(lowerThresholdParameterName, str(thresholdSlider.lowerThreshold))
+
                 upperThresholdParameterName = "UpperThreshold" + indexStr + "_" + channelIndexStr
                 self._parameterNode.SetParameter(upperThresholdParameterName, str(thresholdSlider.upperThreshold))
+
+                lowerThresholdBoundParameterName = "LowerThresholdBound" + indexStr + "_" + channelIndexStr
+                self._parameterNode.SetParameter(lowerThresholdBoundParameterName, str(thresholdSlider.lowerThresholdBound))
+
+                upperThresholdBoundParameterName = "UpperThresholdBound" + indexStr + "_" + channelIndexStr
+                self._parameterNode.SetParameter(upperThresholdBoundParameterName, str(thresholdSlider.upperThresholdBound))
 
         self._parameterNode.EndModify(wasModified)
         self._updatingParameterNodeFromGUI = False
@@ -786,6 +757,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         """
         Create a volume for each channel to control.
         """
+
         if not (node and node.IsA("vtkMRMLScalarVolumeNode")):
             return
 
@@ -795,6 +767,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         else:
             return
 
+        # Determine whether the file format is tiff.
         if (not filename) or widget.volumeDict.get(filename):
             return
         if not (filename.endswith(".tif") or filename.endswith(".tiff")):
@@ -808,6 +781,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             msg.exec_()
             return
 
+        # Assign colors to each channel.
         redNode = slicer.util.getNode('Red')
         greenNode = slicer.util.getNode('Green')
         blueNode = slicer.util.getNode('Blue')
@@ -832,6 +806,13 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         import numpy as np
         print("Loaded image: " + filename)
+
+        try:
+            import tifffile
+        except ModuleNotFoundError:
+            slicer.util.pip_install("tifffile")
+            import tifffile
+
         tif = tifffile.TiffFile(filename)
         nodeName = node.GetName()
         layout = qt.QVBoxLayout()
@@ -959,7 +940,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         renameChannelbutton.objectName = name + "_renameButton"
         renameChannelbutton.connect('clicked(bool)', lambda checked: self.onRenameChannelButtonClicked(scalarVolumeNode,subHorizontallayout,checkBox,widget))
         subHorizontallayout.addWidget(renameChannelbutton)
-
         threshold = slicer.qMRMLVolumeThresholdWidget()
         threshold.objectName = name + "_threshold"
         threshold.setMRMLVolumeNode(scalarVolumeNode)
@@ -1106,6 +1086,12 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         """
         To compute the volume's colocalization within the current ROI.
         """
+        try:
+            import decimal
+        except ModuleNotFoundError:
+            slicer.util.pip_install("decimal")
+            import decimal
+        from decimal import Decimal
 
         # Save the ROI node into into a markups json file.
         roiNode.AddDefaultStorageNode()
@@ -1123,7 +1109,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         singleChannelVolumes = list()
         lowerThresholdList = list()
         upperThresholdList = list()
-        arrayData_upper_thresholded_list = list()
+        arrayData_list = list()
         thresholded_arrayData_bar_list = list()
         thresholded_workVolumes_for_pearson = list()
         channel_for_scatter_list = list()
@@ -1132,45 +1118,63 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         for index in range(len(volumes)):
             volume = volumes[index]
             arrayData = slicer.util.arrayFromVolume(volume)  # Get numpy array data from volume
-            volumeMM3 = (arrayData > 0).sum()
+            volumeMM3 = (arrayData >= 0).sum()
 
             # Crop volume data. Note that numpy array index order is kji, not ijk.
             if roiNode:
                 arrayData = arrayData[cropExtent[4]: cropExtent[5], cropExtent[2]: cropExtent[3],
                             cropExtent[0]: cropExtent[1]]
-            volumeMM3 = (arrayData > 0).sum()
+                arrayData = arrayData.astype(float)
+            volumeMM3 = (arrayData >= 0).sum()
+            arrayData_list.append(arrayData)
 
             # Threshold volume data
-            lowerThreshold = thresholds[index * 2]
-            upperThreshold = thresholds[index * 2 + 1]
+            lowerThreshold = float(thresholds[index * 2])
+            upperThreshold = float(thresholds[index * 2 + 1])
             lowerThresholdList.append(lowerThreshold)
             upperThresholdList.append(upperThreshold)
 
             # newarrayData is to compute the intersection coefficient and i1-i3
             newarrayData = np.logical_and(arrayData>lowerThreshold, arrayData<=upperThreshold)
-            newarrayData = newarrayData.astype(int)
+            newarrayData_integer = newarrayData.astype(int)
 
-            # arrayData_upper_thresholded is to compute the pearson coefficient for the thresholded channels within the ROI box.
-            arrayData_upper_thresholded = np.where(arrayData > upperThreshold,0,arrayData)
-            arrayData_upper_thresholded_list.append(arrayData_upper_thresholded)
-            channel_for_scatter = arrayData_upper_thresholded > lowerThreshold
+            # To calculate PCC, the first step is to set all values greater than the upper threshold to 0, and subtract the lower threshold from all other values.
+            arrayData_first_thresholded = np.where(arrayData > upperThreshold,0,arrayData-lowerThreshold)
+
+            channel_for_scatter = newarrayData
             channel_for_scatter_list.append(channel_for_scatter)
 
-            arrayData_lower_thresholded = np.where(arrayData_upper_thresholded < lowerThreshold,0,arrayData_upper_thresholded)
-            arrayData_final_thresholded = np.where(arrayData_lower_thresholded >= lowerThreshold,arrayData_lower_thresholded-lowerThreshold,arrayData_lower_thresholded)
+            # To calculate PCC, the second step is to set all negative values in the result obtained from the first step to 0.
+            arrayData_final_thresholded = np.where(arrayData_first_thresholded<0,0,arrayData_first_thresholded)
 
+            # To calculate PCC, the third step is to get the average of the result of the second step.
             thresholded_arrayData_bar = np.average(arrayData_final_thresholded)
             thresholded_arrayData_bar_list.append(thresholded_arrayData_bar)
             thresholded_workVolumes_for_pearson.append(arrayData_final_thresholded)
 
-            newvolumeMM3 = np.sum(newarrayData)
-            workVolumes.append(newarrayData)
+            newvolumeMM3 = np.sum(newarrayData_integer)
+            workVolumes.append(newarrayData_integer)
             newvolumeMM3_decimal = Decimal(str(newvolumeMM3))
             singleChannelVolumes.append(newvolumeMM3_decimal)
 
         # No intersection if there is only one channel
         if len(volumes) == 1:
             return
+
+        try:
+            import matplotlib
+        except ModuleNotFoundError:
+            slicer.util.pip_install("matplotlib")
+            import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+
+        try:
+            import math
+        except ModuleNotFoundError:
+            slicer.util.pip_install("python-math")
+            import math
 
         # Computes two channels' intersection if there are only two channels
         if len(workVolumes) == 2:
@@ -1202,8 +1206,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             # Define the ROI for drawing the scatter diagram/2D histogram.
             roi_for_scatter = (channel_for_scatter_list[0] | channel_for_scatter_list[1])
             roi_for_scatter = morphology.remove_small_objects(roi_for_scatter, min_size=9)
-            channel1_in_scatter = arrayData_upper_thresholded_list[0][roi_for_scatter]
-            channel2_in_scatter = arrayData_upper_thresholded_list[1][roi_for_scatter]
+            channel1_in_scatter = arrayData_list[0][roi_for_scatter]
+            channel2_in_scatter = arrayData_list[1][roi_for_scatter]
 
             # Draw the Venn diagram and produce a spreadsheet.
             self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeMM3_decimal, lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName, Pearson_coefficient, channel1_in_scatter, channel2_in_scatter)
@@ -1267,18 +1271,18 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         # Define the ROI for drawing the scatter diagram/2D histogram.
         roi_for_scatter_c1_c2 = (channel_for_scatter_list[0] | channel_for_scatter_list[1])
         roi_for_scatter_c1_c2 = morphology.remove_small_objects(roi_for_scatter_c1_c2, min_size=9)
-        channel1_in_scatter_c1_c2 = arrayData_upper_thresholded_list[0][roi_for_scatter_c1_c2]
-        channel2_in_scatter_c1_c2 = arrayData_upper_thresholded_list[1][roi_for_scatter_c1_c2]
+        channel1_in_scatter_c1_c2 = arrayData_list[0][roi_for_scatter_c1_c2]
+        channel2_in_scatter_c1_c2 = arrayData_list[1][roi_for_scatter_c1_c2]
 
         roi_for_scatter_c1_c3 = (channel_for_scatter_list[0] | channel_for_scatter_list[2])
         roi_for_scatter_c1_c3 = morphology.remove_small_objects(roi_for_scatter_c1_c3, min_size=9)
-        channel1_in_scatter_c1_c3 = arrayData_upper_thresholded_list[0][roi_for_scatter_c1_c3]
-        channel3_in_scatter_c1_c3 = arrayData_upper_thresholded_list[2][roi_for_scatter_c1_c3]
+        channel1_in_scatter_c1_c3 = arrayData_list[0][roi_for_scatter_c1_c3]
+        channel3_in_scatter_c1_c3 = arrayData_list[2][roi_for_scatter_c1_c3]
 
         roi_for_scatter_c2_c3 = (channel_for_scatter_list[1] | channel_for_scatter_list[2])
         roi_for_scatter_c2_c3 = morphology.remove_small_objects(roi_for_scatter_c2_c3, min_size=9)
-        channel2_in_scatter_c2_c3 = arrayData_upper_thresholded_list[1][roi_for_scatter_c2_c3]
-        channel3_in_scatter_c2_c3 = arrayData_upper_thresholded_list[2][roi_for_scatter_c2_c3]
+        channel2_in_scatter_c2_c3 = arrayData_list[1][roi_for_scatter_c2_c3]
+        channel3_in_scatter_c2_c3 = arrayData_list[2][roi_for_scatter_c2_c3]
 
         self.drawVennForThreeChannels(widget, singleChannelVolumes, twoChannelsIntersectionVolumes, volumeMM3_decimal,
                                       lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1,
@@ -1294,13 +1298,15 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         """
         Draw a Venn diagram showing the colocalization percentage when only two channels are selected.
         """
+        import decimal
+        from decimal import Decimal
+
         p1 = 0
         p2 = 0
         p3 = 0
         intersection_coefficient = 0
         i1 = Decimal('0.0000')
         i2 = Decimal('0.0000')
-
 
         totalVolumeOfTwoChannels = singleChannelVolumes[0] + singleChannelVolumes[1] - intersectionVolume
 
@@ -1332,10 +1338,11 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                 i2 = Decimal('0.0000')
 
             else:
-                first_channel_sum = Decimal(p1) + Decimal(p3)
-                second_channel_sum = Decimal(p2) + Decimal(p3)
-                i1 = format(float(Decimal(p3) / first_channel_sum), '.4f')
-                i2 = format(float(Decimal(p3) / second_channel_sum), '.4f')
+                # first_channel_sum = Decimal(p1) + Decimal(p3)
+                # second_channel_sum = Decimal(p2) + Decimal(p3)
+                # i1 = format(float(Decimal(p3) / first_channel_sum), '.4f')
+                i1 = format(float(intersectionVolume / singleChannelVolumes[0]), '.4f')
+                i2 = format(float(intersectionVolume / singleChannelVolumes[1]), '.4f')
 
             print("The threshold range of " + ChannelLabel1_in_csv + " is: " + str(lowerThresholdList[0]) + "-" + str(upperThresholdList[0]))
             print("The threshold range of " + ChannelLabel2_in_csv + " is: " + str(lowerThresholdList[1]) + "-" + str(upperThresholdList[1]))
@@ -1354,11 +1361,22 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             return
 
         # Display and save the Venn diagram.
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
         my_dpi = 200
         plt.figure(figsize=(1000 / my_dpi, 800 / my_dpi), dpi=my_dpi)
         p1_in_venn = str(p1) + '%'
         p2_in_venn = str(p2) + '%'
         p3_in_venn = str(p3) + '%'
+
+        try:
+            import matplotlib_venn
+        except ModuleNotFoundError:
+            slicer.util.pip_install("matplotlib_venn")
+            import matplotlib_venn
+        from matplotlib_venn import venn2_unweighted
+
         venn2 = venn2_unweighted(subsets=[p1_in_venn, p2_in_venn, p3_in_venn], set_labels=[selectedChannelLabel1, selectedChannelLabel2], set_colors=(colors[0], colors[1]), alpha=0.6)
 
         plt.suptitle(imageName, fontsize=15)
@@ -1366,8 +1384,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         Rp = u'r\u209A'
         plt.text(0.7, 0.2, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n', fontsize=6)
-        plt.text(0.7, 0, 'Pearson\'s Coefficient: \n' + Rp + '= ' + str(Pearson_coefficient) + '\n', fontsize=6)
-        plt.text(0.7, -0.2, 'Intersection Coefficient: \n' +'I = ' + str(intersection_coefficient) + '\n' + 'i1 = ' + str(i1) + '\n' + 'i2 = ' + str(i2), fontsize=6)
+        plt.text(0.7, 0, 'Pearson\'s Coefficient: \n' + 'PCC' + ' = ' + str(Pearson_coefficient) + '\n', fontsize=6)
+        plt.text(0.7, -0.2, 'Intersection Coefficients: \n' +'I = ' + str(intersection_coefficient) + '\n' + 'i1 = ' + str(i1) + '\n' + 'i2 = ' + str(i2), fontsize=6)
 
         for text in venn2.subset_labels:
             text.set_fontsize(8)
@@ -1384,6 +1402,25 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
 
         # Draw the scatter diagram/2d histogram for the two selected channels.
+        try:
+            import pandas as pd
+        except ModuleNotFoundError:
+            slicer.util.pip_install("pandas")
+            import pandas as pd
+
+        try:
+            import selenium
+        except ModuleNotFoundError:
+            slicer.util.pip_install("selenium")
+            import selenium
+
+        try:
+            import holoviews as hv
+        except ModuleNotFoundError:
+            slicer.util.pip_install("holoviews")
+            import holoviews as hv
+        hv.extension('bokeh')
+
         df_hist = pd.DataFrame({ChannelLabel1_in_csv: channel1_in_scatter.ravel(), ChannelLabel2_in_csv: channel2_in_scatter.ravel()})
         df_hist = df_hist.groupby(df_hist.columns.tolist()).size().reset_index(name="count")
         df_hist["log count"] = np.log10(df_hist["count"])
@@ -1423,13 +1460,13 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         volume_pearson_column_2  = [str(Pearson_coefficient)]
 
         image_pearson = {'Channels': volume_pearson_column_1,
-                         'Pearson\'s Coefficient (' + Rp + ')': volume_pearson_column_2}
+                         'Pearson\'s Coefficient (PCC)': volume_pearson_column_2}
 
         volume_intersection_column_2 = [str(intersection_coefficient)]
         volume_intersection_column_3 = [str(i1)]
         volume_intersection_column_4 = [str(i2)]
 
-        image_intersection  = {'Intersection Coefficient (I)' : volume_intersection_column_2, 'i1' : volume_intersection_column_3,'i2' : volume_intersection_column_4}
+        image_intersection  = {'Intersection Coefficients (I)' : volume_intersection_column_2, 'i1' : volume_intersection_column_3,'i2' : volume_intersection_column_4}
 
         ROI_Information_column_1 = ["Coordinate System: ", "Center: ", "Orientation: ", "Size: ", "ROI JSON File Location: "]
         ROI_Information_column_2 = ["LPS", coords_str, orientation_str, roiSize_str, jsonFileName]
@@ -1447,12 +1484,18 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         df4 = pd.DataFrame.from_dict(image_intersection, orient='index')
         df4 = df4.transpose()
 
+        try:
+            import xlsxwriter
+        except ModuleNotFoundError:
+            slicer.util.pip_install("xlsxwriter")
+            import xlsxwriter
+
         excel_out_path = slicer.app.defaultScenePath + "/" + imageName + " Statistics.xlsx"
         writer = pd.ExcelWriter(excel_out_path , engine='xlsxwriter')
         df1.to_excel(writer, sheet_name = 'Threshold Range', index=False)
         df2.to_excel(writer, sheet_name='ROI Information', header=False, index=False)
         df3.to_excel(writer, sheet_name = 'Pearson\'s Coefficient', index=False)
-        df4.to_excel(writer, sheet_name='Intersection Coefficient', index=False)
+        df4.to_excel(writer, sheet_name='Intersection Coefficients', index=False)
         venn_subsheet = writer.book.add_worksheet('Venn Diagram')
         venn_subsheet.insert_image('A1', vennImagefileLocation)
 
@@ -1469,6 +1512,9 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         """
         Draw a Venn diagram showing the colocalization percentage when three channels are selected.
         """
+        import decimal
+        from decimal import Decimal
+
         totalVolumeOfTwoChannels = singleChannelVolumes[0] + singleChannelVolumes[1] - twoChannelsIntersectionVolumes[0]
         totalVolumeOfThreeChannels = totalVolumeOfTwoChannels + singleChannelVolumes[2] - twoChannelsIntersectionVolumes[2] - (twoChannelsIntersectionVolumes[1] - intersection_1_2_3)
 
@@ -1534,15 +1580,10 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             elif singleChannelVolumes[2] == Decimal('0.0000'):
                 i3 = Decimal('0.0000')
             else:
-                first_channel_sum = Decimal(p1) + Decimal(p3) + Decimal(p5) + Decimal(p7)
-                second_channel_sum = Decimal(p2) + Decimal(p3) + Decimal(p6) + Decimal(p7)
-                third_channel_sum = Decimal(p4) + Decimal(p5) + Decimal(p6) + Decimal(p7)
 
-                i1 = format(float(Decimal(p7) / first_channel_sum), '.4f')
-
-                i2 = format(float(Decimal(p7) / second_channel_sum), '.4f')
-
-                i3 = format(float(Decimal(p7) / third_channel_sum), '.4f')
+                i1 = format(float(intersection_1_2_3 / singleChannelVolumes[0]), '.4f')
+                i2 = format(float(intersection_1_2_3 / singleChannelVolumes[1]), '.4f')
+                i3 = format(float(intersection_1_2_3 / singleChannelVolumes[2]), '.4f')
 
             print("The threshold range of " + ChannelLabel1_in_csv + " is: " + str(lowerThresholdList[0]) + "-" + str(upperThresholdList[0]))
             print("The threshold range of " + ChannelLabel2_in_csv + " is: " + str(lowerThresholdList[1]) + "-" + str(upperThresholdList[1]))
@@ -1566,6 +1607,9 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             return
 
         # Create a Venn diagram.
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
         my_dpi = 200
         plt.figure(figsize=(1200 / my_dpi, 1200 / my_dpi), dpi=my_dpi)
         p1_in_venn = str(p1) + '%'
@@ -1576,6 +1620,13 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         p6_in_venn = str(p6) + '%'
         p7_in_venn = str(p7) + '%'
 
+        try:
+            import matplotlib_venn
+        except ModuleNotFoundError:
+            slicer.util.pip_install("matplotlib_venn")
+            import matplotlib_venn
+        from matplotlib_venn import venn3_unweighted
+
         venn3 = venn3_unweighted(subsets=[p1_in_venn, p2_in_venn, p3_in_venn, p4_in_venn, p5_in_venn, p6_in_venn, p7_in_venn],
                                  set_labels=[selectedChannelLabel1, selectedChannelLabel2, selectedChannelLabel3],
                                  set_colors=(colors[0], colors[1], colors[2]), alpha=0.6)
@@ -1585,11 +1636,11 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         Rp = u'r\u209A'
         plt.text(0.7, 0.35, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n' + 'Threshold Range for ' + selectedChannelLabel3 + ': '+str(lowerThresholdList[2]) + '~' + str(upperThresholdList[2]) + '\n', fontsize=6)
 
-        plt.text(0.7, 0, 'Pearson\'s Coefficient: \n' + 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel2 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_1_2) + '\n' + '\n' +
-                 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel3 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_1_3) + '\n' + '\n' +
-                 'For ' + selectedChannelLabel2 + ' and ' + selectedChannelLabel3 + ':' + '\n' + Rp + '= ' + str(Pearson_coefficient_2_3) + '\n', fontsize=6)
+        plt.text(0.7, 0, 'Pearson\'s Coefficient: \n' + 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel2 + ':' + '\n' + 'PCC' + ' = ' + str(Pearson_coefficient_1_2) + '\n' + '\n' +
+                 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel3 + ':' + '\n' + 'PCC' + ' = ' + str(Pearson_coefficient_1_3) + '\n' + '\n' +
+                 'For ' + selectedChannelLabel2 + ' and ' + selectedChannelLabel3 + ':' + '\n' + 'PCC' + ' = ' + str(Pearson_coefficient_2_3) + '\n', fontsize=6)
 
-        plt.text(0.7, -0.2, 'Intersection Coefficient: \n' + 'I = ' + str(intersection_coefficient) + '\n' + 'i1 = ' + str(i1) + '\n' + 'i2 = ' + str(i2) + '\n' + 'i3 = ' + str(i3), fontsize=6)
+        plt.text(0.7, -0.2, 'Intersection Coefficients: \n' + 'I = ' + str(intersection_coefficient) + '\n' + 'i1 = ' + str(i1) + '\n' + 'i2 = ' + str(i2) + '\n' + 'i3 = ' + str(i3), fontsize=6)
 
         for text in venn3.subset_labels:
             text.set_fontsize(8)
@@ -1603,6 +1654,26 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         widget.imageWidget.setPixmap(pm)
         widget.imageWidget.setScaledContents(True)
         widget.imageWidget.show()
+
+
+        try:
+            import pandas as pd
+        except ModuleNotFoundError:
+            slicer.util.pip_install("pandas")
+            import pandas as pd
+
+        try:
+            import selenium
+        except ModuleNotFoundError:
+            slicer.util.pip_install("selenium")
+            import selenium
+
+        try:
+            import holoviews as hv
+        except ModuleNotFoundError:
+            slicer.util.pip_install("holoviews")
+            import holoviews as hv
+        hv.extension('bokeh')
 
         # Draw the scatter diagram/2d histogram for the first and second selected channels.
         df_hist_1_2 = pd.DataFrame({ChannelLabel1_in_csv: channel1_in_scatter_c1_c2.ravel(), ChannelLabel2_in_csv: channel2_in_scatter_c1_c2.ravel()})
@@ -1705,13 +1776,13 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         volume_pearson_column_1 = [ChannelLabel1_in_csv + " and " + ChannelLabel2_in_csv, ChannelLabel1_in_csv + " and " + ChannelLabel3_in_csv, ChannelLabel2_in_csv + " and " + ChannelLabel3_in_csv]
 
         volume_pearson_column_2 = [str(Pearson_coefficient_1_2), str(Pearson_coefficient_1_3), str(Pearson_coefficient_2_3)]
-        image_pearson = {'Channels': volume_pearson_column_1, 'Pearson\'s Coefficient (' + Rp + ')': volume_pearson_column_2}
+        image_pearson = {'Channels': volume_pearson_column_1, 'Pearson\'s Coefficient (PCC)': volume_pearson_column_2}
 
         volume_intersection_column_2 = [str(intersection_coefficient)]
         volume_intersection_column_3 = [str(i1)]
         volume_intersection_column_4 = [str(i2)]
         volume_intersection_column_5 = [str(i3)]
-        image_intersection = {'Intersection Coefficient (I)': volume_intersection_column_2, 'i1': volume_intersection_column_3, 'i2': volume_intersection_column_4,'i3': volume_intersection_column_5 }
+        image_intersection = {'Intersection Coefficients (I)': volume_intersection_column_2, 'i1': volume_intersection_column_3, 'i2': volume_intersection_column_4,'i3': volume_intersection_column_5 }
 
         ROI_Information_column_1 = ["Coordinate System: ", "Center: ", "Orientation: ", "Size: ", "ROI JSON File Location: "]
 
@@ -1731,12 +1802,18 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         df4 = pd.DataFrame.from_dict(image_intersection, orient='index')
         df4 = df4.transpose()
 
+        try:
+            import xlsxwriter
+        except ModuleNotFoundError:
+            slicer.util.pip_install("xlsxwriter")
+            import xlsxwriter
+
         excel_out_path = slicer.app.defaultScenePath + "/" + imageName + " Statistics.xlsx"
         writer = pd.ExcelWriter(excel_out_path, engine='xlsxwriter')
         df1.to_excel(writer, sheet_name='Threshold Range', index=False)
         df2.to_excel(writer, sheet_name='ROI Information', header=False, index=False)
         df3.to_excel(writer, sheet_name='Pearson\'s Coefficient', index=False)
-        df4.to_excel(writer, sheet_name='Intersection Coefficient', index=False)
+        df4.to_excel(writer, sheet_name='Intersection Coefficients', index=False)
         venn_subsheet = writer.book.add_worksheet('Venn Diagram')
         venn_subsheet.insert_image('A1', vennImagefileLocation)
         scatter_subsheet = writer.book.add_worksheet('2D Histogram')
