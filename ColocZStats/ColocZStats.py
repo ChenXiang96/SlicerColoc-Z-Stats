@@ -13,12 +13,6 @@ except ModuleNotFoundError:
    import numpy as np
 
 try:
-    from skimage import morphology
-except ModuleNotFoundError:
-    slicer.util.pip_install("scikit-image")
-    from skimage import morphology
-
-try:
     import warnings
 except ModuleNotFoundError:
     slicer.util.pip_install("warnings")
@@ -1205,7 +1199,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
             # Define the ROI for drawing the scatter diagram/2D histogram.
             roi_for_scatter = (channel_for_scatter_list[0] | channel_for_scatter_list[1])
-            roi_for_scatter = morphology.remove_small_objects(roi_for_scatter, min_size=9)
             channel1_in_scatter = arrayData_list[0][roi_for_scatter]
             channel2_in_scatter = arrayData_list[1][roi_for_scatter]
 
@@ -1270,17 +1263,14 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         # Define the ROI for drawing the scatter diagram/2D histogram.
         roi_for_scatter_c1_c2 = (channel_for_scatter_list[0] | channel_for_scatter_list[1])
-        roi_for_scatter_c1_c2 = morphology.remove_small_objects(roi_for_scatter_c1_c2, min_size=9)
         channel1_in_scatter_c1_c2 = arrayData_list[0][roi_for_scatter_c1_c2]
         channel2_in_scatter_c1_c2 = arrayData_list[1][roi_for_scatter_c1_c2]
 
         roi_for_scatter_c1_c3 = (channel_for_scatter_list[0] | channel_for_scatter_list[2])
-        roi_for_scatter_c1_c3 = morphology.remove_small_objects(roi_for_scatter_c1_c3, min_size=9)
         channel1_in_scatter_c1_c3 = arrayData_list[0][roi_for_scatter_c1_c3]
         channel3_in_scatter_c1_c3 = arrayData_list[2][roi_for_scatter_c1_c3]
 
         roi_for_scatter_c2_c3 = (channel_for_scatter_list[1] | channel_for_scatter_list[2])
-        roi_for_scatter_c2_c3 = morphology.remove_small_objects(roi_for_scatter_c2_c3, min_size=9)
         channel2_in_scatter_c2_c3 = arrayData_list[1][roi_for_scatter_c2_c3]
         channel3_in_scatter_c2_c3 = arrayData_list[2][roi_for_scatter_c2_c3]
 
