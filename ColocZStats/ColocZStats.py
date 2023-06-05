@@ -816,6 +816,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         channelDim = -1
         ZDim = -1
         axes = tif.series[0].axes
+        tif_axes = str(axes)
         image = tif.asarray()
         for index in range(0, len(axes)):
             if axes[index] == 'Z':
@@ -859,18 +860,25 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                         channelVolume = self.createVolumeForChannel(componentImage, colorIds[component], layout, name, widget,channelLabelName)
                         channelVolumeList.append(channelVolume)
                 else:
-                    text = "The number of image data axes is incompatible. Expected 4. Got " + str(dimNum)
+                    text = "The number of axes read by TiffFile library is incompatible. Expected 4. Got " + str(dimNum)
                     msg = qt.QMessageBox()
                     msg.setIcon(qt.QMessageBox.Warning)
                     msg.setText(text)
                     msg.setStandardButtons(qt.QMessageBox.Ok)
                     msg.exec_()
                     slicer.mrmlScene.RemoveNode(node)
+                    return
 
             else:
-                channelLabelName = node.GetName()
-                self.initializeVolume(node, greyNode.GetID(), layout, widget, channelLabelName)
-                channelVolumeList.append(node)
+                text = "Multi-channel image required. The axes read by TiffFile library are:" + tif_axes + ", without the inclusion of the channel indicator 'C'."
+                msg = qt.QMessageBox()
+                msg.setIcon(qt.QMessageBox.Warning)
+                msg.setText(text)
+                msg.setStandardButtons(qt.QMessageBox.Ok)
+                msg.exec_()
+                slicer.mrmlScene.RemoveNode(node)
+                return
+
 
 
         widget.volumeDict[filename] = channelVolumeList
@@ -985,7 +993,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             roiNode = widget.ROINodeDict[filename]
         if roiNode:
             # Get the information of ROI
-            coords, roiSize, orientationMatrix = self.infoForROI(roiNode)
+            roi_center_coords, roiSize, orientationMatrix = self.infoForROI(roiNode)
         else:
             text = "Please enable the checkbox of 'Display ROI' to create an ROI box."
             msg = qt.QMessageBox()
@@ -1028,7 +1036,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                 return
 
             # Compute each volume's stats
-            self.computeStatsForVolumes(selectedVolumes, roiNode, thresholds, comboBox.currentText, widget, selectedColors,selectedChannelLabels,coords, roiSize, orientationMatrix)
+            self.computeStatsForVolumes(selectedVolumes, roiNode, thresholds, comboBox.currentText, widget, selectedColors,selectedChannelLabels,roi_center_coords, roiSize, orientationMatrix)
 
 
     def getSelectedVolumes(self, channelVolumeList, group):
@@ -1062,10 +1070,9 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         Get the information of ROI.
         """
         # The center of the markups representation. Ex. center of ROI or plane markups.
-        # similar as GetCenter()
-        for fidIndex in range(roiNode.GetNumberOfControlPoints()):
-            coords = [0, 0, 0]
-            roiNode.GetNthControlPointPosition(fidIndex, coords)
+
+        roi_center_coords = [0, 0, 0]
+        roiNode.GetCenterWorld(roi_center_coords)
 
         # 3x3 orientation matrix of the ROI representation.
         orientationMatrix = list(roiNode.GetNthControlPointOrientationMatrix(0))
@@ -1073,10 +1080,10 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         # The size/axis-aligned edge lengths of the ROI.
         roiSize = list(roiNode.GetSize())
 
-        return coords, roiSize, orientationMatrix
+        return roi_center_coords, roiSize, orientationMatrix
 
 
-    def computeStatsForVolumes(self, volumes, roiNode, thresholds, imageName, widget, colors, ChannelLabels, coords, roiSize, orientationMatrix):
+    def computeStatsForVolumes(self, volumes, roiNode, thresholds, imageName, widget, colors, ChannelLabels, roi_center_coords, roiSize, orientationMatrix):
         """
         To compute the volume's colocalization within the current ROI.
         """
@@ -1163,7 +1170,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
-
         try:
             import math
         except ModuleNotFoundError:
@@ -1203,7 +1209,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             channel2_in_scatter = arrayData_list[1][roi_for_scatter]
 
             # Draw the Venn diagram and produce a spreadsheet.
-            self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeMM3_decimal, lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName, Pearson_coefficient, channel1_in_scatter, channel2_in_scatter)
+            self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeMM3_decimal, lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, roi_center_coords, roiSize, orientationMatrix, jsonFileName, Pearson_coefficient, channel1_in_scatter, channel2_in_scatter)
 
             return
 
@@ -1277,14 +1283,14 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         self.drawVennForThreeChannels(widget, singleChannelVolumes, twoChannelsIntersectionVolumes, volumeMM3_decimal,
                                       lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1,
                                       selectedChannelLabel2, selectedChannelLabel3, ChannelLabel1_in_csv,
-                                      ChannelLabel2_in_csv, ChannelLabel3_in_csv, imageName, coords, roiSize,
+                                      ChannelLabel2_in_csv, ChannelLabel3_in_csv, imageName, roi_center_coords, roiSize,
                                       orientationMatrix, jsonFileName,Pearson_coefficient_1_2, Pearson_coefficient_1_3,
                                       Pearson_coefficient_2_3, channel1_in_scatter_c1_c2, channel2_in_scatter_c1_c2,
                                       channel1_in_scatter_c1_c3, channel3_in_scatter_c1_c3, channel2_in_scatter_c2_c3,
                                       channel3_in_scatter_c2_c3)
 
 
-    def drawVennForTwoChannels(self, widget, singleChannelVolumes, intersectionVolume,lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, coords, roiSize, orientationMatrix, jsonFileName,Pearson_coefficient, channel1_in_scatter, channel2_in_scatter):
+    def drawVennForTwoChannels(self, widget, singleChannelVolumes, intersectionVolume,lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, roi_center_coords, roiSize, orientationMatrix, jsonFileName,Pearson_coefficient, channel1_in_scatter, channel2_in_scatter):
         """
         Draw a Venn diagram showing the colocalization percentage when only two channels are selected.
         """
@@ -1328,9 +1334,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                 i2 = Decimal('0.0000')
 
             else:
-                # first_channel_sum = Decimal(p1) + Decimal(p3)
-                # second_channel_sum = Decimal(p2) + Decimal(p3)
-                # i1 = format(float(Decimal(p3) / first_channel_sum), '.4f')
                 i1 = format(float(intersectionVolume / singleChannelVolumes[0]), '.4f')
                 i2 = format(float(intersectionVolume / singleChannelVolumes[1]), '.4f')
 
@@ -1370,17 +1373,17 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         venn2 = venn2_unweighted(subsets=[p1_in_venn, p2_in_venn, p3_in_venn], set_labels=[selectedChannelLabel1, selectedChannelLabel2], set_colors=(colors[0], colors[1]), alpha=0.6)
 
         plt.suptitle(imageName, fontsize=15)
-        plt.title('\n' + 'Voxel Percentages', fontsize=10)
+        plt.title('\n' + 'Volume Percentages', fontsize=10)
 
         Rp = u'r\u209A'
         plt.text(0.7, 0.2, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n', fontsize=6)
-        plt.text(0.7, 0, 'Pearson\'s Coefficient: \n' + 'PCC' + ' = ' + str(Pearson_coefficient) + '\n', fontsize=6)
+        plt.text(0.7, 0, 'Pearson Correlation Coefficient: \n' + 'PCC' + ' = ' + str(Pearson_coefficient) + '\n', fontsize=6)
         plt.text(0.7, -0.2, 'Intersection Coefficients: \n' +'I = ' + str(intersection_coefficient) + '\n' + 'i1 = ' + str(i1) + '\n' + 'i2 = ' + str(i2), fontsize=6)
 
         for text in venn2.subset_labels:
             text.set_fontsize(8)
 
-        vennImagename = imageName + ' Venn diagram.jpg'
+        vennImagename = imageName + ' Venn Diagram.jpg'
         vennImagefileLocation = slicer.app.defaultScenePath + "/" + vennImagename
         plt.savefig(vennImagefileLocation,bbox_inches='tight')
         pm = qt.QPixmap(vennImagefileLocation)
@@ -1438,28 +1441,28 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         hv.save(hv_fig, scatter_plot_html_location)
 
         # Create a spreadsheet to save the colocalization and ROI information.
-        coords_str = "[" + str(-coords[0]) + ", " + str(-coords[1]) + ", " + str(coords[2]) + "]"
+        roi_center_coords_str = "[" + str(-roi_center_coords[0]) + ", " + str(-roi_center_coords[1]) + ", " + str(roi_center_coords[2]) + "]"
         orientation_str = "[" + str(-orientationMatrix[0]) + ", " + str(-orientationMatrix[1]) + ", " + str(-orientationMatrix[2]) + ", " + str(-orientationMatrix[3]) + ", " + str(-orientationMatrix[4]) + ", " + str(-orientationMatrix[5]) + ", " + str(orientationMatrix[6]) + ", " + str(orientationMatrix[7]) + ", " + str(orientationMatrix[8]) + "]"
         roiSize_str = "[" + str(roiSize[0]) + ", " + str(roiSize[1]) + ", " + str(roiSize[2]) + "]"
 
         threshold_Range_column_1 = [ChannelLabel1_in_csv , ChannelLabel2_in_csv]
         threshold_Range_column_2 = [str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]), str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1])]
-        threshold_Range = {'Channels': threshold_Range_column_1, 'Threshold Range': threshold_Range_column_2}
+        threshold_Range = {'Channels': threshold_Range_column_1, 'Threshold Ranges': threshold_Range_column_2}
 
         volume_pearson_column_1   = [ChannelLabel1_in_csv + " and " + ChannelLabel2_in_csv]
         volume_pearson_column_2  = [str(Pearson_coefficient)]
 
-        image_pearson = {'Channels': volume_pearson_column_1,
-                         'Pearson\'s Coefficient (PCC)': volume_pearson_column_2}
+        image_pearson = {'Channel Pair': volume_pearson_column_1,
+                         'Pearson Correlation Coefficient (PCC)': volume_pearson_column_2}
 
         volume_intersection_column_2 = [str(intersection_coefficient)]
         volume_intersection_column_3 = [str(i1)]
         volume_intersection_column_4 = [str(i2)]
 
-        image_intersection  = {'Intersection Coefficients (I)' : volume_intersection_column_2, 'i1' : volume_intersection_column_3,'i2' : volume_intersection_column_4}
+        image_intersection  = {'Global Intersection Coefficient (I)' : volume_intersection_column_2, 'i1' : volume_intersection_column_3,'i2' : volume_intersection_column_4}
 
         ROI_Information_column_1 = ["Coordinate System: ", "Center: ", "Orientation: ", "Size: ", "ROI JSON File Location: "]
-        ROI_Information_column_2 = ["LPS", coords_str, orientation_str, roiSize_str, jsonFileName]
+        ROI_Information_column_2 = ["LPS", roi_center_coords_str, orientation_str, roiSize_str, jsonFileName]
         ROI_Information = {"ROI Information": ROI_Information_column_1, "Values": ROI_Information_column_2}
 
         df1 = pd.DataFrame.from_dict(threshold_Range, orient='index')
@@ -1482,9 +1485,9 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         excel_out_path = slicer.app.defaultScenePath + "/" + imageName + " Statistics.xlsx"
         writer = pd.ExcelWriter(excel_out_path , engine='xlsxwriter')
-        df1.to_excel(writer, sheet_name = 'Threshold Range', index=False)
+        df1.to_excel(writer, sheet_name = 'Threshold Ranges', index=False)
         df2.to_excel(writer, sheet_name='ROI Information', header=False, index=False)
-        df3.to_excel(writer, sheet_name = 'Pearson\'s Coefficient', index=False)
+        df3.to_excel(writer, sheet_name = 'PCC', index=False)
         df4.to_excel(writer, sheet_name='Intersection Coefficients', index=False)
         venn_subsheet = writer.book.add_worksheet('Venn Diagram')
         venn_subsheet.insert_image('A1', vennImagefileLocation)
@@ -1496,7 +1499,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
     def drawVennForThreeChannels(self, widget, singleChannelVolumes, twoChannelsIntersectionVolumes, intersection_1_2_3,
                                  lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2,
                                  selectedChannelLabel3, ChannelLabel1_in_csv, ChannelLabel2_in_csv, ChannelLabel3_in_csv,
-                                 imageName, coords, roiSize,orientationMatrix, jsonFileName,Pearson_coefficient_1_2,
+                                 imageName, roi_center_coords, roiSize,orientationMatrix, jsonFileName,Pearson_coefficient_1_2,
                                  Pearson_coefficient_1_3,Pearson_coefficient_2_3, channel1_in_scatter_c1_c2, channel2_in_scatter_c1_c2,
                                  channel1_in_scatter_c1_c3, channel3_in_scatter_c1_c3, channel2_in_scatter_c2_c3, channel3_in_scatter_c2_c3):
         """
@@ -1533,26 +1536,16 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             result_list_2 = [Decimal(result1), Decimal(result2), Decimal(result3), Decimal(result4), Decimal(result5), Decimal(result6), Decimal(result7)]
             result_list_2.remove(max(result_list_2))
             result_list_2_sum = sum(result_list_2)
+            result_list_1[result_list_1.index(max(result_list_1))] = Decimal('100.0000') - result_list_2_sum
 
-            if result_list_1.count(max(result_list_1)) == 3 and max(result_list_1) == Decimal('33.3333'):
-                p1 = result1
-                p2 = result2
-                p3 = result3
-                p4 = result4
-                p5 = result5
-                p6 = result6
-                p7 = result7
-            else:
-                result_list_1[result_list_1.index(max(result_list_1))] = Decimal('100.0000') - result_list_2_sum
-
-                # Get the specific percentage value corresponding to each part of the Venn diagram.
-                p1 = format(float(result_list_1[0]), '.4f')
-                p2 = format(float(result_list_1[1]), '.4f')
-                p3 = format(float(result_list_1[2]), '.4f')
-                p4 = format(float(result_list_1[3]), '.4f')
-                p5 = format(float(result_list_1[4]), '.4f')
-                p6 = format(float(result_list_1[5]), '.4f')
-                p7 = format(float(result_list_1[6]), '.4f')
+            # Get the specific percentage value corresponding to each part of the Venn diagram.
+            p1 = format(float(result_list_1[0]), '.4f')
+            p2 = format(float(result_list_1[1]), '.4f')
+            p3 = format(float(result_list_1[2]), '.4f')
+            p4 = format(float(result_list_1[3]), '.4f')
+            p5 = format(float(result_list_1[4]), '.4f')
+            p6 = format(float(result_list_1[5]), '.4f')
+            p7 = format(float(result_list_1[6]), '.4f')
 
             sum1_2 = format(float((result_list_1[2] + result_list_1[6])), '.4f')
             sum1_3 = format(float((result_list_1[4] + result_list_1[6])), '.4f')
@@ -1621,12 +1614,12 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                                  set_labels=[selectedChannelLabel1, selectedChannelLabel2, selectedChannelLabel3],
                                  set_colors=(colors[0], colors[1], colors[2]), alpha=0.6)
         plt.suptitle(imageName, fontsize=16)
-        plt.title('\n' + 'Voxel Percentages', fontsize=10)
+        plt.title('\n' + 'Volume Percentages', fontsize=10)
 
         Rp = u'r\u209A'
         plt.text(0.7, 0.35, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n' + 'Threshold Range for ' + selectedChannelLabel3 + ': '+str(lowerThresholdList[2]) + '~' + str(upperThresholdList[2]) + '\n', fontsize=6)
 
-        plt.text(0.7, 0, 'Pearson\'s Coefficient: \n' + 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel2 + ':' + '\n' + 'PCC' + ' = ' + str(Pearson_coefficient_1_2) + '\n' + '\n' +
+        plt.text(0.7, 0, 'Pearson Correlation Coefficients: \n' + 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel2 + ':' + '\n' + 'PCC' + ' = ' + str(Pearson_coefficient_1_2) + '\n' + '\n' +
                  'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel3 + ':' + '\n' + 'PCC' + ' = ' + str(Pearson_coefficient_1_3) + '\n' + '\n' +
                  'For ' + selectedChannelLabel2 + ' and ' + selectedChannelLabel3 + ':' + '\n' + 'PCC' + ' = ' + str(Pearson_coefficient_2_3) + '\n', fontsize=6)
 
@@ -1635,7 +1628,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         for text in venn3.subset_labels:
             text.set_fontsize(8)
 
-        vennImagename = imageName + ' Venn diagram.jpg'
+        vennImagename = imageName + ' Venn Diagram.jpg'
         vennImagefileLocation = slicer.app.defaultScenePath + "/" + vennImagename
         plt.savefig(vennImagefileLocation,bbox_inches='tight')
         pm = qt.QPixmap(vennImagefileLocation)
@@ -1749,7 +1742,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
 
         # Create a spreadsheet to save the colocalization and ROI information.
-        coords_str = "[" + str(-coords[0]) + ", " + str(-coords[1]) + ", " + str(coords[2]) + "]"
+        roi_center_coords_str = "[" + str(-roi_center_coords[0]) + ", " + str(-roi_center_coords[1]) + ", " + str(roi_center_coords[2]) + "]"
         orientation_str = "[" + str(-orientationMatrix[0]) + ", " + str(-orientationMatrix[1]) + ", " + str(
             -orientationMatrix[2]) + ", " + str(-orientationMatrix[3]) + ", " + str(-orientationMatrix[4]) + ", " + str(
             -orientationMatrix[5]) + ", " + str(orientationMatrix[6]) + ", " + str(orientationMatrix[7]) + ", " + str(
@@ -1761,22 +1754,22 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                                     str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]),
                                     str(lowerThresholdList[2]) + '~' + str(upperThresholdList[2])]
 
-        threshold_Range = {'Channels': threshold_Range_column_1, 'Threshold Range': threshold_Range_column_2}
+        threshold_Range = {'Channels': threshold_Range_column_1, 'Threshold Ranges': threshold_Range_column_2}
 
         volume_pearson_column_1 = [ChannelLabel1_in_csv + " and " + ChannelLabel2_in_csv, ChannelLabel1_in_csv + " and " + ChannelLabel3_in_csv, ChannelLabel2_in_csv + " and " + ChannelLabel3_in_csv]
 
         volume_pearson_column_2 = [str(Pearson_coefficient_1_2), str(Pearson_coefficient_1_3), str(Pearson_coefficient_2_3)]
-        image_pearson = {'Channels': volume_pearson_column_1, 'Pearson\'s Coefficient (PCC)': volume_pearson_column_2}
+        image_pearson = {'Channel Pairs': volume_pearson_column_1, 'Pearson Correlation Coefficients (PCCs)': volume_pearson_column_2}
 
         volume_intersection_column_2 = [str(intersection_coefficient)]
         volume_intersection_column_3 = [str(i1)]
         volume_intersection_column_4 = [str(i2)]
         volume_intersection_column_5 = [str(i3)]
-        image_intersection = {'Intersection Coefficients (I)': volume_intersection_column_2, 'i1': volume_intersection_column_3, 'i2': volume_intersection_column_4,'i3': volume_intersection_column_5 }
+        image_intersection = {'Global Intersection Coefficient (I)': volume_intersection_column_2, 'i1': volume_intersection_column_3, 'i2': volume_intersection_column_4,'i3': volume_intersection_column_5 }
 
         ROI_Information_column_1 = ["Coordinate System: ", "Center: ", "Orientation: ", "Size: ", "ROI JSON File Location: "]
 
-        ROI_Information_column_2 = ["LPS", coords_str, orientation_str, roiSize_str, jsonFileName]
+        ROI_Information_column_2 = ["LPS", roi_center_coords_str, orientation_str, roiSize_str, jsonFileName]
 
         ROI_Information = {"ROI Information": ROI_Information_column_1, "Values": ROI_Information_column_2}
 
@@ -1800,13 +1793,13 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         excel_out_path = slicer.app.defaultScenePath + "/" + imageName + " Statistics.xlsx"
         writer = pd.ExcelWriter(excel_out_path, engine='xlsxwriter')
-        df1.to_excel(writer, sheet_name='Threshold Range', index=False)
+        df1.to_excel(writer, sheet_name='Threshold Ranges', index=False)
         df2.to_excel(writer, sheet_name='ROI Information', header=False, index=False)
-        df3.to_excel(writer, sheet_name='Pearson\'s Coefficient', index=False)
+        df3.to_excel(writer, sheet_name='PCCs', index=False)
         df4.to_excel(writer, sheet_name='Intersection Coefficients', index=False)
         venn_subsheet = writer.book.add_worksheet('Venn Diagram')
         venn_subsheet.insert_image('A1', vennImagefileLocation)
-        scatter_subsheet = writer.book.add_worksheet('2D Histogram')
+        scatter_subsheet = writer.book.add_worksheet('2D Histograms')
         scatter_subsheet.insert_image('A1', scatter_plot_png_location_1_2)
         scatter_subsheet.insert_image('I1', scatter_plot_png_location_1_3)
         scatter_subsheet.insert_image('Q1', scatter_plot_png_location_2_3)
