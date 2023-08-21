@@ -16,7 +16,7 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
   * Go to “Quantification” category
   * Click “Install” button of “ColocZStats” to install it.
   * Wait until “Restart” button in the lower-right corner becomes enabled, then click “Restart”.
-  * For more information on how to install extension via the “Extensions Manager”, check out this [link](https://slicer.readthedocs.io/en/latest/user_guide/extensions_manager.html#install-extensions). Note that the URL for the *Slicer Extensions Catalog* listed in the link above is outdated, the latest URL is: [https://extensions.slicer.org/catalog/All/31382/win](https://extensions.slicer.org/catalog/All/31382/win).
+  * For more information on how to install extension via the “Extensions Manager”, check out this [link](https://slicer.readthedocs.io/en/latest/user_guide/extensions_manager.html#install-extensions). Note that the URL for the *Slicer Extensions Catalog* listed in the link above is outdated, the latest URL is: [https://extensions.slicer.org/catalog/All/31938/win](https://extensions.slicer.org/catalog/All/31938/win).
 
 ## Tutorial
 * Start 3D Slicer
