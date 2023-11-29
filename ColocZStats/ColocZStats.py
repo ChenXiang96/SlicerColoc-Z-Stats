@@ -5,7 +5,7 @@ import vtk, qt, ctk, slicer
 import SegmentStatistics
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
-
+import time
 try:
    import numpy as np
 except ModuleNotFoundError:
@@ -988,6 +988,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         if not channelVolumeList:
             return
 
+        annotation_text = widget.annotationDict[filename].GetText()
+
         roiNode = None
         if filename in widget.ROINodeDict:
             roiNode = widget.ROINodeDict[filename]
@@ -1036,7 +1038,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                 return
 
             # Compute each volume's stats
-            self.computeStatsForVolumes(selectedVolumes, roiNode, thresholds, comboBox.currentText, widget, selectedColors,selectedChannelLabels,roi_center_coords, roiSize, orientationMatrix)
+            self.computeStatsForVolumes(selectedVolumes, roiNode, thresholds, comboBox.currentText, widget, selectedColors,selectedChannelLabels,roi_center_coords, roiSize, orientationMatrix, annotation_text)
 
 
     def getSelectedVolumes(self, channelVolumeList, group):
@@ -1083,7 +1085,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         return roi_center_coords, roiSize, orientationMatrix
 
 
-    def computeStatsForVolumes(self, volumes, roiNode, thresholds, imageName, widget, colors, ChannelLabels, roi_center_coords, roiSize, orientationMatrix):
+    def computeStatsForVolumes(self, volumes, roiNode, thresholds, imageName, widget, colors, ChannelLabels, roi_center_coords, roiSize, orientationMatrix, annotation_text):
         """
         To compute the volume's colocalization within the current ROI.
         """
@@ -1093,6 +1095,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             slicer.util.pip_install("decimal")
             import decimal
         from decimal import Decimal
+
 
         # Save the ROI node into into a markups json file.
         roiNode.AddDefaultStorageNode()
@@ -1209,7 +1212,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
             channel2_in_scatter = arrayData_list[1][roi_for_scatter]
 
             # Draw the Venn diagram and produce a spreadsheet.
-            self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeMM3_decimal, lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, roi_center_coords, roiSize, orientationMatrix, jsonFileName, Pearson_coefficient, channel1_in_scatter, channel2_in_scatter)
+            self.drawVennForTwoChannels(widget, singleChannelVolumes, volumeMM3_decimal, lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, roi_center_coords, roiSize, orientationMatrix, jsonFileName, Pearson_coefficient, channel1_in_scatter, channel2_in_scatter, annotation_text)
 
             return
 
@@ -1287,10 +1290,10 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                                       orientationMatrix, jsonFileName,Pearson_coefficient_1_2, Pearson_coefficient_1_3,
                                       Pearson_coefficient_2_3, channel1_in_scatter_c1_c2, channel2_in_scatter_c1_c2,
                                       channel1_in_scatter_c1_c3, channel3_in_scatter_c1_c3, channel2_in_scatter_c2_c3,
-                                      channel3_in_scatter_c2_c3)
+                                      channel3_in_scatter_c2_c3, annotation_text)
 
 
-    def drawVennForTwoChannels(self, widget, singleChannelVolumes, intersectionVolume,lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, roi_center_coords, roiSize, orientationMatrix, jsonFileName,Pearson_coefficient, channel1_in_scatter, channel2_in_scatter):
+    def drawVennForTwoChannels(self, widget, singleChannelVolumes, intersectionVolume,lowerThresholdList, upperThresholdList, colors, selectedChannelLabel1, selectedChannelLabel2, ChannelLabel1_in_csv, ChannelLabel2_in_csv, imageName, roi_center_coords, roiSize, orientationMatrix, jsonFileName,Pearson_coefficient, channel1_in_scatter, channel2_in_scatter, annotation_text):
         """
         Draw a Venn diagram showing the colocalization percentage when only two channels are selected.
         """
@@ -1465,6 +1468,13 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         ROI_Information_column_2 = ["LPS", roi_center_coords_str, orientation_str, roiSize_str, jsonFileName]
         ROI_Information = {"ROI Information": ROI_Information_column_1, "Values": ROI_Information_column_2}
 
+        annotation_column_1 = [annotation_text]
+        annotation_information = {"Annotation": annotation_column_1}
+
+        current_timestamp = time.ctime()
+        timestamp_column_1 = [current_timestamp]
+        timestamp_information = {"Timestamp": timestamp_column_1}
+
         df1 = pd.DataFrame.from_dict(threshold_Range, orient='index')
         df1 = df1.transpose()
 
@@ -1476,6 +1486,13 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         df4 = pd.DataFrame.from_dict(image_intersection, orient='index')
         df4 = df4.transpose()
+
+        df5 = pd.DataFrame.from_dict(annotation_information, orient='index')
+        df5 = df5.transpose()
+
+        df6 = pd.DataFrame.from_dict(timestamp_information, orient='index')
+        df6 = df6.transpose()
+
 
         try:
             import xlsxwriter
@@ -1491,9 +1508,10 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         df4.to_excel(writer, sheet_name='Intersection Coefficients', index=False)
         venn_subsheet = writer.book.add_worksheet('Venn Diagram')
         venn_subsheet.insert_image('A1', vennImagefileLocation)
-
         scatter_subsheet = writer.book.add_worksheet('2D Histogram')
         scatter_subsheet.insert_image('A1', scatter_plot_png_location)
+        df5.to_excel(writer, sheet_name='Annotation', index=False)
+        df6.to_excel(writer, sheet_name='Timestamp', index=False)
         writer.close()
 
     def drawVennForThreeChannels(self, widget, singleChannelVolumes, twoChannelsIntersectionVolumes, intersection_1_2_3,
@@ -1501,7 +1519,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                                  selectedChannelLabel3, ChannelLabel1_in_csv, ChannelLabel2_in_csv, ChannelLabel3_in_csv,
                                  imageName, roi_center_coords, roiSize,orientationMatrix, jsonFileName,Pearson_coefficient_1_2,
                                  Pearson_coefficient_1_3,Pearson_coefficient_2_3, channel1_in_scatter_c1_c2, channel2_in_scatter_c1_c2,
-                                 channel1_in_scatter_c1_c3, channel3_in_scatter_c1_c3, channel2_in_scatter_c2_c3, channel3_in_scatter_c2_c3):
+                                 channel1_in_scatter_c1_c3, channel3_in_scatter_c1_c3, channel2_in_scatter_c2_c3, channel3_in_scatter_c2_c3, annotation_text):
         """
         Draw a Venn diagram showing the colocalization percentage when three channels are selected.
         """
@@ -1755,7 +1773,6 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
                                     str(lowerThresholdList[2]) + '~' + str(upperThresholdList[2])]
 
         threshold_Range = {'Channels': threshold_Range_column_1, 'Threshold Ranges': threshold_Range_column_2}
-
         volume_pearson_column_1 = [ChannelLabel1_in_csv + " and " + ChannelLabel2_in_csv, ChannelLabel1_in_csv + " and " + ChannelLabel3_in_csv, ChannelLabel2_in_csv + " and " + ChannelLabel3_in_csv]
 
         volume_pearson_column_2 = [str(Pearson_coefficient_1_2), str(Pearson_coefficient_1_3), str(Pearson_coefficient_2_3)]
@@ -1768,10 +1785,15 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         image_intersection = {'Global Intersection Coefficient (I)': volume_intersection_column_2, 'i1': volume_intersection_column_3, 'i2': volume_intersection_column_4,'i3': volume_intersection_column_5 }
 
         ROI_Information_column_1 = ["Coordinate System: ", "Center: ", "Orientation: ", "Size: ", "ROI JSON File Location: "]
-
         ROI_Information_column_2 = ["LPS", roi_center_coords_str, orientation_str, roiSize_str, jsonFileName]
-
         ROI_Information = {"ROI Information": ROI_Information_column_1, "Values": ROI_Information_column_2}
+
+        annotation_column_1 = [annotation_text]
+        annotation_information = {"Annotation": annotation_column_1}
+
+        current_timestamp = time.ctime()
+        timestamp_column_1 = [current_timestamp]
+        timestamp_information = {"Timestamp": timestamp_column_1}
 
         df1 = pd.DataFrame.from_dict(threshold_Range, orient='index')
         df1 = df1.transpose()
@@ -1784,6 +1806,12 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
 
         df4 = pd.DataFrame.from_dict(image_intersection, orient='index')
         df4 = df4.transpose()
+
+        df5 = pd.DataFrame.from_dict(annotation_information, orient='index')
+        df5 = df5.transpose()
+
+        df6 = pd.DataFrame.from_dict(timestamp_information, orient='index')
+        df6 = df6.transpose()
 
         try:
             import xlsxwriter
@@ -1803,6 +1831,8 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         scatter_subsheet.insert_image('A1', scatter_plot_png_location_1_2)
         scatter_subsheet.insert_image('I1', scatter_plot_png_location_1_3)
         scatter_subsheet.insert_image('Q1', scatter_plot_png_location_2_3)
+        df5.to_excel(writer, sheet_name='Annotation', index=False)
+        df6.to_excel(writer, sheet_name='Timestamp', index=False)
         writer.close()
 
 
