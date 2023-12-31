@@ -1,40 +1,40 @@
 # SlicerColoc-Z-Stats (ver. 1.0 dev): A Z-Stack signal colocalization extension tool for 3D Slicer
 ## Overview
-SlicerColoc-Z-Stats is a 3D Slicer extension for computing proteins' colocalization (spatial overlap between different channels) of Z-stack images.
+SlicerColoc-Z-Stats is a 3D Slicer extension designed for measuring proteins' colocalization based on multi-channel confocal z-stack images.
 
-Users can adjust the volume rendering of the Z-stack image via customizable thresholds, select the region of interest (ROI) by the bounding box and generate a Venn diagram, 2D histograms and a spreadsheet, which displays/saves the colocalization metrics.
+Users can: Customize the threshold range for each channel of the loaded confocal z-stack by using adjustable sliders (changes can be reflected via the volume rendering in real-time), Select region of interest (ROI) through an ROI box, Obtain a Venn diagram displaying the volume percentages of the thresholded channels within the ROI and the results of several related colocalization coefficients; Get a 2D histogram showing voxel intensity relationships of each channel pair, and get a spreadsheet that stores all the analysis results.
 
 The license for this extension is [MIT](https://github.com/benoukraflab/SlicerColoc-Z-Stats/blob/main/LICENSE)
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Screenshots.png" width="800px">
 
 ## Installation
-* Since the 2D histograms produced by our extension are created by the Bokeh package, in order to be able to export PNG images, Bokeh needs to use a browser to render the PNG. In order for this to work, a driver is required to be installed before installing our extension in the 3D Slicer. Take installing the *ChromeDriver* as an example: Download and unzip the *ChromeDriver* corresponding to your Chrome version from this [link](https://chromedriver.chromium.org/downloads), and make sure it's in your PATH. For more information on how to install the driver, check out this [link](https://docs.bokeh.org/en/2.4.2/docs/user_guide/export.html#). 
+* Since the 2D histograms produced by our extension are created by the Bokeh package, in order to be able to export PNG images, Bokeh needs to use a browser to render the PNG. For this to work, a driver is required to be installed before installing our extension in the 3D Slicer. Take installing the *ChromeDriver* as an example: Download and unzip the *ChromeDriver* corresponding to your Chrome version from this [link](https://chromedriver.chromium.org/downloads), and make sure it's in your PATH. For more information on how to install the driver, check out this [link](https://docs.bokeh.org/en/2.4.2/docs/user_guide/export.html#). 
 * The 3D Slicer stable version is needed to use this extension: [Stable Release](https://download.slicer.org/). For more information on how to install 3D Slicer, check out this [link](https://slicer.readthedocs.io/en/latest/user_guide/getting_started.html).
-  * On Windows, open “Extensions Manager” using menu: View / Extensions manager.
-  * Go to “Install extensions” tab
-  * Go to “Quantification” category
-  * Click “Install” button of “ColocZStats” to install it.
-  * Wait until “Restart” button in the lower-right corner becomes enabled, then click “Restart”.
-  * For more information on how to install extension via the “Extensions Manager”, check out this [link](https://slicer.readthedocs.io/en/latest/user_guide/extensions_manager.html#install-extensions). Note that the URL for the *Slicer Extensions Catalog* listed in the link above is outdated, the latest URL is: [https://extensions.slicer.org/catalog/All/32438/win](https://extensions.slicer.org/catalog/All/32438/win).
+  * On Windows, open “Extensions Manager” via the menu: View / Extensions Manager.
+  * Go to the “Install extensions” tab
+  * Go to the “Quantification” category
+  * Click the “Install” button of “ColocZStats” to install it.
+  * Wait until the “Restart” button in the lower-right corner becomes enabled, then click “Restart”.
+  * For more information on how to install an extension via the “Extensions Manager”, check out this [link](https://slicer.readthedocs.io/en/latest/user_guide/extensions_manager.html#install-extensions). Note that the URL for the *Slicer Extensions Catalog* listed in the link above is outdated, the latest URL is: [https://extensions.slicer.org/catalog/All/32438/win](https://extensions.slicer.org/catalog/All/32438/win).
 
 ## Tutorial
 * Start 3D Slicer
-* Go to "ColocZStats" extension.
-* Load a Z-stack TIFF image: Click the 'Data' button or the 'Add Data' button under the 'File' tab, and click the 'Choose File(s) to Add' button to load the image. When a Z-stack image is loaded into ColocZStats, each of its channels is automatically split into separate volume nodes, and each volume node is assigned a distinct color for rendering. This allows you to view and manipulate each channel independently. 
-* Click on the eye icon in front of 'Display ROI' to create and show the ROI box of the current image in the 3D View. Please note that after the image is loaded, the initial ROI box created by clicking the button may not fit perfectly with the entire image. However, you can still customize and drag the ROI box to any position you need. If you want to select the entire image for calculation, make sure to drag the ROI box to a position that completely contains the entire image.
-* Adjust the ROI box to any position.
+* Go to the "ColocZStats" extension.
+* Load a multi-channel z-stack TIFF image: Click the 'Data' button and click the 'Choose File(s) to Add' button to load the image. When it is loaded into ColocZStats, each channel will be automatically split as a separate volume node, and each will be assigned a distinct color for rendering.
+* Select the channels for analysis and adjust the sliders under any channel to any necessary position to assign custom threshold ranges.
+* Click on the eye icon of 'Display ROI' to create an ROI box for the current stack in the 3D View. Please note that the initial ROI box may not fit perfectly with the entire stack. However, you can still drag the ROI box to any position you need. If you want to select the entire stack for calculation, drag the ROI box to a position containing the entire stack.
 * Click the 'Re-center ROI' button to reposition the image region within the ROI box to the scene's center.
-* Adjust the slider under each channel to any position. The threshold of each channel can be changed synchronously with the sliding of the slider, which can be observed in the 3D view.
-* To obtain 2D histograms, a Venn diagram, and a spreadsheet displaying/saving the image's colocalization metrics within the current ROI, click the 'Compute Colocalization' button and wait a few seconds. Please note that when there are too many voxels in the ROI box, it may take 2-3 minutes for Bokeh to render the 2D histogram. The 2D histograms, Venn diagram and the spreadsheet are saved in the default scene location of 3D slicer. (The default scene location can be found under the 'Edit/Application Settings' option within 3D Slicer. It can also be read/written from Python as *slicer.app.defaultScenePath*. It can also be changed, but note that the default scene location should be a folder with read and write permissions).
-* Click the 'SAVE' button to save the scene, the annotations, and the status of the UI to a 'mrml' file for reloading.
+* Click the 'Compute Colocalization' button and wait a few seconds to obtain a Venn diagram, 2D histograms, and a spreadsheet that saves all the results of the related colocalization metrics. All the analysis will only based on the thresholded channels within the ROI. When there are too many voxels in the ROI box, it may take longer for Bokeh to render the 2D histogram. The 2D histograms, Venn diagram, and results spreadsheet will be saved in the 3D Slicer's default scene location. (The default scene location can be found under the 'Edit/Application Settings' option within 3D Slicer. It can also be read/written from Python as *slicer.app.defaultScenePath*. It can also be changed, but note that the default scene location should be a folder with read and write permissions).
+* Click the 'SAVE' button to save the scene, the annotations, and the status of the GUI to an 'mrml' file for reloading.
+* To ensure compatibility, the input file should be a TIFF-formatted 3D multi-channel confocal z-stack that retains its original intensities, and each channel should be in grayscale. Additionally, all channels should have identical image order, dimensions, and magnification.
 * [Download links to sample image](https://drive.google.com/file/d/1IYlggsikgtQR7jXE83sSS2ZtMCuswsA0/view?usp=sharing)
 
 ## Coefficients
 * **Pearson's colocalization coefficient**:
 Pearson's linear correlation coefficient can be used to measure the overlap of the voxels. It is defined as follows:
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Pearson%20Coefficient.png" width="600px">
-The pearson's coefficient ranges from -1 to 1. Ch1 and Ch2 represent the selected channels, respectively. 
+The Pearson's coefficient ranges from -1 to 1. Ch1 and Ch2 represent the selected channels, respectively. 
 Similar to the way the Colocalization Analyzer in Huygens software computes Pearson's coefficient [1]. In principle, Pearson's coefficient is unaffected by thresholds. However, thresholds are taken into account to handle specified threshold settings consistently across all coefficients computed by the ColocZStats. The difference between the Colocalization Analyzer of Huygens and ColocZStats is that when ColocZStats calculates Pearson's coefficient, each specified channel's lower threshold and upper threshold will be included in the calculation. For example,  if you specify lower and upper threshold values for a specified channel, voxel intensities greater than the upper threshold value will be set to zero and based on that, the lower threshold value will be subtracted from all the remaining voxel intensities. In case negative voxel values occur, these will be set to zero. This means that setting user-specified threshold values can change the resulting Pearson's coefficient. Therefore, Pearson's coefficient generated by ColocZStats is always based on the thresholded image data within the ROI box.
 
 
@@ -49,7 +49,7 @@ The intersection coefficient is:
 
 The numerator: the total number of intersecting voxels between the two channels. 
 
-The denominator: the total number of voxels of both channels together, which is calculated as the total voxels’ number of the first selected channel plus the total voxels’ number of the second selected channel minus voxels’ number of the intersection (to avoid accounting for it twice).
+The denominator: the total number of voxels of both channels together, which is calculated as the total voxels number of the first selected channel plus the total voxels number of the second selected channel minus the voxels’ number of the intersection (to avoid accounting for it twice).
 
 The intersection coefficient can also be split into two separate coefficients (To report what portion of the first and second channels are intersecting):
 
@@ -66,7 +66,7 @@ The intersection coefficient is:
 
 The numerator: the total number of intersecting voxels among three channels. 
 
-The denominator: the total voxels’ number of the three selected channels together.
+The denominator: the total voxel number of the three selected channels together.
 When any three channels are selected, the intersection coefficient can also be split into three separate coefficients (To report what portion of the three channels are intersecting):
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i1%20for%20three.png" width="600px">
@@ -98,7 +98,7 @@ When any three channels are selected, the intersection coefficient can also be s
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Channels%20panel.gif" width="600px">
 
-* **Rename Channel**: A button to the right of each channel label to rename each channel. Each channel name displayed on the GUI corresponds to the channel name on the Venn diagram and the spreadsheet generated by clicking the 'Compute Colocalization' button. Note that in order to save the scene without duplicate volume nodes and to avoid errors (includes calculation errors) after loading the scene, please give each channel an individual name.
+* **Rename Channel**: A button to the right of each channel label to rename each channel. Each channel name displayed on the GUI corresponds to the channel name on the Venn diagram and the spreadsheet generated by clicking the 'Compute Colocalization' button. Note that to save the scene without duplicate volume nodes and to avoid errors (including calculation errors) after loading the scene, please give each channel an individual name.
 
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Rename%20Channel.gif" width="600px">
