@@ -45,6 +45,7 @@ Similar to the way the Colocalization Analyzer in Huygens software computes Pear
 
 Similar to the way the Colocalization Analyzer in Huygens software computes the global intersection coefficient [1]. For any specified channel, a voxel in the ROI box can be considered to have some interesting signal once its value is within a certain threshold intensity range. In such a case, its value will be accounted for as 1, independent of its actual intensity; otherwise, it will be accounted for as 0. The difference between the Colocalization Analyzer of Huygens and ColocZStats is that when ColocZStats calculates the global intersection coefficient, each specified channel's upper threshold will be included in the calculation.
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Intersection-weight.png" width="600px">
+
 In the case of any two channels being selected, the global intersection coefficient is:
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Intersection%20for%20two.png" width="600px">
