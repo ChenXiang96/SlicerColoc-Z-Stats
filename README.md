@@ -47,7 +47,6 @@ Similar to the way the Colocalization Analyzer in Huygens software computes the 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Intersection-weight.png" width="600px">
 
 In the case of any two channels being selected, the global intersection coefficient is:
-
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Intersection%20for%20two.png" width="600px">
 
 The intersection contribution of a given voxel can be defined as the product of the two channels.
