@@ -141,6 +141,6 @@ When any three channels are selected, the global intersection coefficient can al
 
 
 ## References
-[1] ColocalizationTheory [Internet]. [cited 2022 Dec 21],. Available from: https://svi.nl/ColocalizationTheory
+[1] ColocalizationTheory [Internet]. [last accessed 2024 Jan 18],. Available from: https://svi.nl/ColocalizationTheory
 
 
