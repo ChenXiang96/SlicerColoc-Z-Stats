@@ -22,12 +22,12 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 * Start 3D Slicer
 * Go to the "ColocZStats" extension.
 * Load a multi-channel z-stack TIFF image: Click the 'Data' button and click the 'Choose File(s) to Add' button to load the image. When it is loaded into ColocZStats, each channel will be automatically split as a separate volume node, and each will be assigned a distinct color for rendering.
-* Select the channels for analysis and adjust the sliders under any channel to any necessary position to assign custom threshold ranges.
+* Select the channels for analysis and adjust the sliders under any channel to any necessary position to assign custom threshold ranges. Up to three channels can be simultaneously selected for each analysis.
 * Click on the eye icon of 'Display ROI' to create an ROI box for the current stack in the 3D View. Please note that the initial ROI box may not fit perfectly with the entire stack. However, you can still drag the ROI box to any position you need. If you want to select the entire stack for calculation, drag the ROI box to a position containing the entire stack.
 * Click the 'Re-center ROI' button to reposition the image region within the ROI box to the scene's center.
 * Click the 'Compute Colocalization' button and wait a few seconds to obtain a Venn diagram, a 2D histogram for each channel pair, and a spreadsheet that saves all the results of the related colocalization metrics. All the analysis will only based on the thresholded channels within the ROI. When there are too many voxels in the ROI box, it may take longer for Bokeh to render 2D histograms. The 2D histograms, Venn diagram, and the result spreadsheet will be saved in the 3D Slicer's default scene location by default. (The default scene location can be found under the 'Edit/Application Settings' option within 3D Slicer. It can also be read/written from Python as *slicer.app.defaultScenePath*. It can also be changed, but note that the default scene location should be a folder with read and write permissions).
 * Click the 'SAVE' button to save the scene, the annotation, and the status of the GUI to an 'mrml' file for reloading.
-* To ensure compatibility, the input file should be a TIFF-formatted 3D multi-channel confocal z-stack that retains its original intensities, and each channel should be in grayscale. Additionally, all channels should have identical image order, dimensions, and magnification.
+* To ensure compatibility, the input file should be a TIFF-formatted 3D multi-channel confocal z-stack that retains its original intensities, and each channel should be in grayscale. Additionally, all channels should have identical image order, dimensions, and magnification. Each imported multi-channel z-stack is allowed to contain up to a maximum of 15 channels.
 * [Download links to sample image](https://drive.google.com/file/d/1IYlggsikgtQR7jXE83sSS2ZtMCuswsA0/view?usp=sharing)
 
 ## Coefficients
@@ -133,12 +133,6 @@ When any three channels are selected, the global intersection coefficient can al
 * **Xiang Chen** - [Xiang Chen](https://github.com/ChenXiang96).
 * **Oscar Meruvia-Pastor** - [Oscar Meruvia-Pastor](https://github.com/omerpas/).
 * **Touati Benoukraf** - [Touati Benoukraf](https://github.com/benoukraflab).
-
-## Limitations
-* For compatibility, each multi-channel Z-stack is allowed to contain up to 15 channels.
-* A maximum of 3 channels can be selected simultaneously for the computation.
-
-
 
 ## References
 [1] ColocalizationTheory [Internet]. [last accessed 2024 Jan 18],. Available from: https://svi.nl/ColocalizationTheory
