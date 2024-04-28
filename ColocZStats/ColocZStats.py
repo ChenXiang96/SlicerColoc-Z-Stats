@@ -1379,12 +1379,12 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         plt.title('\n' + 'Volume Percentages', fontsize=10)
 
         Rp = u'r\u209A'
-        plt.text(0.7, 0.2, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n', fontsize=6)
-        plt.text(0.7, 0, 'Pearson Correlation Coefficient: \n' + 'PCC' + ' = ' + str(Pearson_coefficient) + '\n', fontsize=6)
-        plt.text(0.7, -0.2, 'Intersection Coefficients: \n' +'I = ' + str(intersection_coefficient) + '\n' + 'i1 = ' + str(i1) + '\n' + 'i2 = ' + str(i2), fontsize=6)
+        plt.text(0.7, 0.2, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n', fontsize=9)
+        plt.text(0.7, 0, 'Pearson Correlation Coefficient: \n' + 'PCC' + ' = ' + str(Pearson_coefficient) + '\n', fontsize=9)
+        plt.text(0.7, -0.23, 'Intersection Coefficients: \n' +'I = ' + str(intersection_coefficient) + '\n' + 'i1 = ' + str(i1) + '\n' + 'i2 = ' + str(i2), fontsize=9)
 
         for text in venn2.subset_labels:
-            text.set_fontsize(8)
+            text.set_fontsize(10)
 
         vennImagename = imageName + ' Venn Diagram.jpg'
         vennImagefileLocation = slicer.app.defaultScenePath + "/" + vennImagename
@@ -1612,7 +1612,7 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         my_dpi = 200
-        plt.figure(figsize=(1200 / my_dpi, 1200 / my_dpi), dpi=my_dpi)
+        plt.figure(figsize=(1600 / my_dpi, 1300 / my_dpi), dpi=my_dpi)
         p1_in_venn = str(p1) + '%'
         p2_in_venn = str(p2) + '%'
         p3_in_venn = str(p3) + '%'
@@ -1635,16 +1635,16 @@ class ColocZStatsLogic(ScriptedLoadableModuleLogic):
         plt.title('\n' + 'Volume Percentages', fontsize=10)
 
         Rp = u'r\u209A'
-        plt.text(0.7, 0.35, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n' + 'Threshold Range for ' + selectedChannelLabel3 + ': '+str(lowerThresholdList[2]) + '~' + str(upperThresholdList[2]) + '\n', fontsize=6)
+        plt.text(0.7, 0.4, 'Threshold Range for ' + selectedChannelLabel1  + ': '+ str(lowerThresholdList[0]) + '~' + str(upperThresholdList[0]) + '\n' + 'Threshold Range for ' + selectedChannelLabel2 + ': '+str(lowerThresholdList[1]) + '~' + str(upperThresholdList[1]) + '\n' + 'Threshold Range for ' + selectedChannelLabel3 + ': '+str(lowerThresholdList[2]) + '~' + str(upperThresholdList[2]) + '\n', fontsize=9)
 
         plt.text(0.7, 0, 'Pearson Correlation Coefficients: \n' + 'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel2 + ':' + '\n' + 'PCC' + ' = ' + str(Pearson_coefficient_1_2) + '\n' + '\n' +
                  'For ' + selectedChannelLabel1 + ' and ' + selectedChannelLabel3 + ':' + '\n' + 'PCC' + ' = ' + str(Pearson_coefficient_1_3) + '\n' + '\n' +
-                 'For ' + selectedChannelLabel2 + ' and ' + selectedChannelLabel3 + ':' + '\n' + 'PCC' + ' = ' + str(Pearson_coefficient_2_3) + '\n', fontsize=6)
+                 'For ' + selectedChannelLabel2 + ' and ' + selectedChannelLabel3 + ':' + '\n' + 'PCC' + ' = ' + str(Pearson_coefficient_2_3) + '\n', fontsize=9)
 
-        plt.text(0.7, -0.2, 'Intersection Coefficients: \n' + 'I = ' + str(intersection_coefficient) + '\n' + 'i1 = ' + str(i1) + '\n' + 'i2 = ' + str(i2) + '\n' + 'i3 = ' + str(i3), fontsize=6)
+        plt.text(0.7, -0.2, 'Intersection Coefficients: \n' + 'I = ' + str(intersection_coefficient) + '\n' + 'i1 = ' + str(i1) + '\n' + 'i2 = ' + str(i2) + '\n' + 'i3 = ' + str(i3), fontsize=9)
 
         for text in venn3.subset_labels:
-            text.set_fontsize(8)
+            text.set_fontsize(10)
 
         vennImagename = imageName + ' Venn Diagram.jpg'
         vennImagefileLocation = slicer.app.defaultScenePath + "/" + vennImagename
