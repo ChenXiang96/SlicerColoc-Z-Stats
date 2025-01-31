@@ -8,6 +8,9 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
 
 <img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/Screenshots.png" width="800px">
 
+## Publication
+[ColocZStats: a z-stack signal colocalization extension tool for 3D slicer](https://doi.org/10.3389/fphys.2024.1440099) has been published in **Frontiers in Physiology**. Please cite this article if you use ColocZStats.
+
 ## Installation
 * Since the 2D histograms produced by our extension are created by the Bokeh package, to be able to export PNG images, Bokeh needs to use a browser to render the PNGs. For this to work, a driver is required to be installed before installing our extension in the 3D Slicer. Take installing the *ChromeDriver* as an example: Download and unzip the *ChromeDriver* corresponding to your Chrome version from this [link](https://chromedriver.chromium.org/downloads), and make sure it's in your PATH. For more information on how to install the driver, check out this [link](https://docs.bokeh.org/en/2.4.2/docs/user_guide/export.html#). 
 * The 3D Slicer stable version is needed to use this extension: [Stable Release](https://download.slicer.org/). For more information on how to install 3D Slicer, check out this [link](https://slicer.readthedocs.io/en/latest/user_guide/getting_started.html).
@@ -16,7 +19,7 @@ The license for this extension is [MIT](https://github.com/benoukraflab/SlicerCo
   * Go to the “Quantification” category
   * Click the “Install” button of “ColocZStats” to install it.
   * Wait until the “Restart” button in the lower-right corner becomes clickable, then click “Restart”.
-  * For more information on how to install an extension via the “Extensions Manager”, check out this [link](https://slicer.readthedocs.io/en/latest/user_guide/extensions_manager.html#install-extensions). Note that the URL for the *Slicer Extensions Catalog* listed in the link above is outdated, the latest URL is: [https://extensions.slicer.org/catalog/All/32448/win](https://extensions.slicer.org/catalog/All/32448/win).
+  * For more information on how to install an extension via the “Extensions Manager”, check out this [link](https://slicer.readthedocs.io/en/latest/user_guide/extensions_manager.html#install-extensions). Note that the URL for the *Slicer Extensions Catalog* listed in the link above is outdated, the latest URL is: [https://extensions.slicer.org/catalog/Quantification/33216/win](https://extensions.slicer.org/catalog/Quantification/33216/win).
 
 ## Tutorial
 * Start 3D Slicer
