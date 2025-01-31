@@ -1,6 +1,6 @@
-# SlicerColoc-Z-Stats (ver. 1.0 dev): A Z-Stack signal colocalization extension tool for 3D Slicer
+# ColocZStats (ver. 1.0 dev): A Z-Stack signal colocalization extension tool for 3D Slicer
 ## Overview
-SlicerColoc-Z-Stats is a 3D Slicer extension designed for measuring proteins' colocalization based on multi-channel confocal z-stack images.
+ColocZStats is a 3D Slicer extension designed for measuring proteins' colocalization based on multi-channel confocal z-stack images.
 
 Users can: Customize the threshold range for each channel of the loaded confocal z-stack by using adjustable sliders (changes can be reflected via the volume rendering in real-time); Select a region of interest (ROI) through an ROI box; Obtain a Venn diagram displaying the volume percentages of the thresholded channels within the ROI; Obtain the results of several related colocalization coefficients; Get a 2D histogram showing voxel intensity relationships of each channel pair, and get a spreadsheet that stores all the analysis results.
 
