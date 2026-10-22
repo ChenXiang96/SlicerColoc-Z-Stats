@@ -60,9 +60,9 @@ The denominator: the total volume of both channels together, which is calculated
 
 The global intersection coefficient can also be split into two separate coefficients (To report what portion of the first and second channels are intersecting):
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i1%20for%20two.png" width="250px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i1%20for%20two.png" width="350px">
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i2%20for%20two.png" width="250px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i2%20for%20two.png" width="350px">
 
 Based on the above method of obtaining the intersection coefficients between two channels, the functionality of obtaining the intersection coefficients of three channels has been added to ColocZStats.
 In the case of any three channels are selected:
@@ -78,11 +78,11 @@ The denominator: the total volume of the three selected channels together.
 
 When any three channels are selected, the global intersection coefficient can also be split into three separate coefficients (To report what portion of the three channels are intersecting):
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i1%20for%20three.png" width="300px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i1%20for%20three.png" width="400px">
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i2%20for%20three.png" width="300px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i2%20for%20three.png" width="400px">
 
-<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i3%20for%20three.png" width="300px">
+<img src="https://github.com/ChenXiang96/SlicerColoc-Z-Stats/blob/main/Images/i3%20for%20three.png" width="400px">
 
 
 ## Panels and their use
